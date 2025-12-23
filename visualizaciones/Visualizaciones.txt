@@ -1,0 +1,67 @@
+Visualizaciones TFG
+
+- Comparación clásico (solo tengo el de mayo) vs derbi sevillabetis (un betis sevilla) derbi madrileño no lo cojo vs otros?no funca
+- Dias de champions Madrid vs liga
+
+Orden de ejecuciones de los scripts:
+1. LeerTParsearXMLTrafico.py: usa la función parser y coge todos los archivos del S3 que le mandes -> Generasource_eventospormessemana_todos_confechas.csv
+Todo gira entorno a esto para los eventos de trafico (en la carpeta de visualzaciones de eventos_por_semanames solo se usa esa), combinándolo con los archivos de partidos y estadios para visualización
+
+REUNION 16/5:
+
+
+Grafico 2:
+2.4 - Solo mostrar para los meses que tengo, descartar el resto de meses
+
+Filtro general por evento, fechas, provincias, para todas las graficas en las que tengan que ver, son las claves importantes
+
+Grafico 3:
+3.2 - Bien, 3km como mucho, venderlo como que seria muy útil a largo plazo con 8 meses o así
+	- Investigar si los eventos públicos incluyen o coinciden con partidos
+	- Complementar con un mapa con un selector incorporado de provincias, fechas en el que se vean los eventos a 3km de los estadios
+3.4 - Solo determinados tipos de eventos como condiciones de la carretera u obstrucciones
+	- Añadir un filtro por ejemplo de un top 10
+	- Completar también con un mapa
+
+Grafico 4:
+
+4.4 - Es un grafico interesante, seria mas sencillo si se centrara en algo concreto
+
+
+MEMORIA
+- Para el primer grafico he tenido que crear una relación entre las columnas type de ambas fuentes de datos (eventos únicos y todos) para que me funcione la sincronización de filtros entre las graficas. En caso contrario no funciona por estar filtrando con columnas de dos tablas distintas
+- Evento publico no concibe partidos, sino otros eventos ajenos
+
+
+
+Eventos_Unicos y todos:
+	- Semanas del año en las que ha habido mas eventos activos
+	- Meses de registro de eventos: Muestra los meses en los que se han registrado mas eventos. Es correcto, por ejemplo en 2018 solo salen 2 eventos registrados. En el csv base aparecen esos 2 eventos pero 1000 veces cada uno, ya que aparecen en todos los archivos con distinto valor de fecha_publicacion
+	- Meses con mayor número de eventos activos
+	- Semanas del año con mayor numero de eventos activos
+Duracion_eventos:
+	- Rangos de duración de días de cada evento
+	- Total y promedios de días por evento
+	- Top 10 eventos individuales con mayor duración
+	- Meses de registro de mas eventos activos actualmente
+Eventos_cercanos a partidos:
+	- Estadios con mas eventos a 3km en todo el año
+	- Partidos con mas eventos cercanos
+	- Eventos mas comunes en días de partido
+
+Analisis_carreteras coru:
+	- Carreteras con mas eventos en España
+TODO CORRECTO HASTA AQUI
+
+	- Promedio de carreteras con mayor duración de eventos en a coruña
+	- Clasificación de carreteras por conflictivas y no conflictivas - campo high-low-etc
+
+
+TAREAS
+- Comprobar si para las latitudes y longitudes se estan cogiendo solo puntos fijos o los de tramo también
+- Para mostrar en el mapa tanto las coordenadas de eventos como de estadios, hay que meter en latitud y longitud las de ambos (latitud), una nueva columna con DAX que indique si es evento o estadio para meterlo en la leyenda de tipos y diferenciarlos
+- Hay que añadir la duración en días para el de eventos_cercanos_a_partidos_final
+
+
+
+
