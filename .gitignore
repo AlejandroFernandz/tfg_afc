@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.env
+.venv
+
+# Datos descargados
+data/xml_historicos/*.xml
+data/*.csv
+data/*.xml
+
+# Mapas generados
+mapas_generados/*.html
+mapas_generados/*.ok
+mapas_generados/*.tmp.html
+
+# Logs / temporales
+*.log
+
+# Visualizaciones - outputs grandes
+visualizaciones/**/*.csv
+visualizaciones/**/*.pbix
