@@ -1,4 +1,4 @@
-from flask import Flask, send_from_directory
+from flask import Flask, send_from_directory, make_response
 import threading
 import time
 import os
@@ -8,26 +8,17 @@ app = Flask(__name__)
 
 MAPA_DIR = "mapas_generados"
 MAPA_HTML = "mapa_completo.html"
-# FLAG_PRIMERA_ACTUALIZACION = os.path.join(MAPA_DIR, "primera_actualizacion.ok")
 
-# Funcion nueva 18/07
-# def esperar_archivos_mapa():
-#     """Espera hasta que todos los archivos de mapa estén generados."""
-#     intentos = 0
-#     while not (
-#         os.path.exists(os.path.join(MAPA_DIR, "mapa_actuales.html")) and
-#         os.path.exists(os.path.join(MAPA_DIR, "mapa_futuros.html")) and
-#         os.path.exists(os.path.join(MAPA_DIR, MAPA_HTML))
-#     ):
-#         time.sleep(1)
-#         intentos += 1
-#         if intentos > 60:
-#             raise TimeoutError("❌ Timeout: No se generaron todos los mapas a tiempo.")
-#     print("[✅] Todos los archivos de mapa están disponibles.")
-
+def nocache(resp):
+    """Añade headers para evitar el cacheo del mapa en el navegador. 30/12"""
+    resp.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    resp.headers["Pragma"] = "no-cache"
+    resp.headers["Expires"] = "0"
+    return resp
 
 def actualizar_mapa_periodicamente():
     """Actualiza el mapa cada 5 minutos."""
+    time.sleep(15)  # Espera inicial para evitar colisión al arrancar 30/12
     while True:
         try:
             print("[🛰️] Actualizando mapa...")
@@ -56,27 +47,27 @@ def home():
 @app.route("/mapa")
 def mostrar_mapa():
     """Sirve el HTML del mapa completo con pestañas."""
-    return send_from_directory(MAPA_DIR, MAPA_HTML)
+    # return send_from_directory(MAPA_DIR, MAPA_HTML)
+    resp = make_response(send_from_directory(MAPA_DIR, MAPA_HTML))
+    return nocache(resp)
 
 @app.route("/mapa_actuales.html")
 def mapa_actuales():
-    return send_from_directory(MAPA_DIR, "mapa_actuales.html")
+    # return send_from_directory(MAPA_DIR, "mapa_actuales.html")
+    resp = make_response(send_from_directory(MAPA_DIR, "mapa_actuales.html"))
+    return nocache(resp)
 
 @app.route("/mapa_futuros.html")
 def mapa_futuros():
-    return send_from_directory(MAPA_DIR, "mapa_futuros.html")
-
-# @app.route("/primera_actualizacion")
-# def primera_actualizacion():
-#     """Devuelve 1 si ya se ha generado el primer mapa, 0 si no."""
-#     return "1" if os.path.exists(FLAG_PRIMERA_ACTUALIZACION) else "0"
+    # return send_from_directory(MAPA_DIR, "mapa_futuros.html")
+    resp = make_response(send_from_directory(MAPA_DIR, "mapa_futuros.html"))
+    return nocache(resp)
 
 if __name__ == "__main__":
     print("[🚀] Generando mapa inicial completo...")
 
     try:
         update_map()
-        # esperar_archivos_mapa()
         print("[✅] Mapa actualizado correctamente.")
 
     except Exception as e:
