@@ -8,22 +8,22 @@ app = Flask(__name__)
 
 MAPA_DIR = "mapas_generados"
 MAPA_HTML = "mapa_completo.html"
-FLAG_PRIMERA_ACTUALIZACION = os.path.join(MAPA_DIR, "primera_actualizacion.ok")
+# FLAG_PRIMERA_ACTUALIZACION = os.path.join(MAPA_DIR, "primera_actualizacion.ok")
 
 # Funcion nueva 18/07
-def esperar_archivos_mapa():
-    """Espera hasta que todos los archivos de mapa estén generados."""
-    intentos = 0
-    while not (
-        os.path.exists(os.path.join(MAPA_DIR, "mapa_actuales.html")) and
-        os.path.exists(os.path.join(MAPA_DIR, "mapa_futuros.html")) and
-        os.path.exists(os.path.join(MAPA_DIR, MAPA_HTML))
-    ):
-        time.sleep(1)
-        intentos += 1
-        if intentos > 60:
-            raise TimeoutError("❌ Timeout: No se generaron todos los mapas a tiempo.")
-    print("[✅] Todos los archivos de mapa están disponibles.")
+# def esperar_archivos_mapa():
+#     """Espera hasta que todos los archivos de mapa estén generados."""
+#     intentos = 0
+#     while not (
+#         os.path.exists(os.path.join(MAPA_DIR, "mapa_actuales.html")) and
+#         os.path.exists(os.path.join(MAPA_DIR, "mapa_futuros.html")) and
+#         os.path.exists(os.path.join(MAPA_DIR, MAPA_HTML))
+#     ):
+#         time.sleep(1)
+#         intentos += 1
+#         if intentos > 60:
+#             raise TimeoutError("❌ Timeout: No se generaron todos los mapas a tiempo.")
+#     print("[✅] Todos los archivos de mapa están disponibles.")
 
 
 def actualizar_mapa_periodicamente():
@@ -66,17 +66,17 @@ def mapa_actuales():
 def mapa_futuros():
     return send_from_directory(MAPA_DIR, "mapa_futuros.html")
 
-@app.route("/primera_actualizacion")
-def primera_actualizacion():
-    """Devuelve 1 si ya se ha generado el primer mapa, 0 si no."""
-    return "1" if os.path.exists(FLAG_PRIMERA_ACTUALIZACION) else "0"
+# @app.route("/primera_actualizacion")
+# def primera_actualizacion():
+#     """Devuelve 1 si ya se ha generado el primer mapa, 0 si no."""
+#     return "1" if os.path.exists(FLAG_PRIMERA_ACTUALIZACION) else "0"
 
 if __name__ == "__main__":
     print("[🚀] Generando mapa inicial completo...")
 
     try:
         update_map()
-        esperar_archivos_mapa()
+        # esperar_archivos_mapa()
         print("[✅] Mapa actualizado correctamente.")
 
     except Exception as e:
