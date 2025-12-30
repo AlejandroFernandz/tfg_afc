@@ -8,6 +8,32 @@ from app.parsing import *
 import schedule
 import time
 
+# Funcion para que se siga cargando el mapa hasta que se muestre algo (nunca será necesario refrescar manualmente)
+def save_atomic(m, output_file):
+    tmp = output_file + ".tmp"
+    m.save(tmp)
+    os.replace(tmp, output_file)
+
+# Funcion para que vuelva a funcionar el zoom sobre las provincias, que se usará en create_actuales_map y create_futuros_map
+def expose_leaflet_map(base_map):
+    map_var = base_map.get_name()
+    js = f"""
+    <script>
+    (function() {{
+        function bind() {{
+            if (typeof {map_var} !== "undefined") {{
+                window.map = {map_var};
+            }} else {{
+                setTimeout(bind, 50);
+            }}
+        }}
+        bind();
+    }})();
+    </script>
+    """
+    base_map.get_root().html.add_child(folium.Element(js))
+
+
 # Función para crear el mapa combinado
 def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"):
     OFFSET = 0.0001
@@ -15,23 +41,6 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
     added_radar_locations = set()
 
     base_map = folium.Map(location=[40.4168, -3.7038], zoom_start=6)
-    
-
-    # base_map.get_root().html.add_child(folium.Element("""
-    # <script>
-    #     window.addEventListener("load", function() {
-    #         setTimeout(function () {
-    #             const maps = document.querySelectorAll(".leaflet-container");
-    #             maps.forEach(m => {
-    #                 if (m._leaflet_map) {
-    #                     window.map = m._leaflet_map;
-    #                 }
-    #             });
-    #         }, 500);
-    #     });
-    # </script>
-    # """))
-
 
     cluster_eventos = MarkerCluster(name="Eventos agrupados", maxClusterRadius=50, disableClusteringAtZoom=15).add_to(base_map)
     cluster_radares = MarkerCluster(name="Radares agrupados", maxClusterRadius=50, disableClusteringAtZoom=15).add_to(base_map)
@@ -39,12 +48,7 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
     base_map.get_root().script.add_child(
     folium.Element(f"window.map = {base_map.get_name()};")
     )
-    base_map.save(output_file) # quito este save map porque es irrelevante, tengo otro al final
-
-    # cluster_eventos = FeatureGroupSubGroup(cluster_eventos, "Eventos fijos").add_to(base_map)
-    # cluster_eventos = FeatureGroupSubGroup(cluster_eventos, "Eventos de tramo").add_to(base_map)
-    # cluster_radares = FeatureGroupSubGroup(cluster_radares, "Radares fijos").add_to(base_map)
-    # cluster_radares = FeatureGroupSubGroup(cluster_radares, "Radares de tramo").add_to(base_map)
+    # base_map.save(output_file)
 
     def añadir_eventos(df, fijos_fg, tramos_fg):
         for _, event in df.iterrows():
@@ -166,41 +170,23 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
 
     folium.LayerControl(collapsed=False).add_to(base_map)
     base_map.get_root().script.add_child(
-    folium.Element(f"window.map = {base_map.get_name()};")) ### neuvo
-    base_map.save(output_file)
-
+    folium.Element(f"window.map = {base_map.get_name()};")) ### 28/12 correcto
+    expose_leaflet_map(base_map)
+    # base_map.save(output_file)
+    save_atomic(base_map, output_file)
 
 def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
     OFFSET = 0.0001
     added_locations = set()
 
     base_map = folium.Map(location=[40.4168, -3.7038], zoom_start=6)
-    
-
-    # base_map.get_root().html.add_child(folium.Element("""
-    # <script>
-    #     window.addEventListener("load", function() {
-    #         setTimeout(function () {
-    #             const maps = document.querySelectorAll(".leaflet-container");
-    #             maps.forEach(m => {
-    #                 if (m._leaflet_map) {
-    #                     window.map = m._leaflet_map;
-    #                 }
-    #             });
-    #         }, 500);
-    #     });
-    # </script>
-    # """))
-
 
     cluster_eventos = MarkerCluster(name="Eventos futuros agrupados", maxClusterRadius=50, disableClusteringAtZoom=15).add_to(base_map)
 
-    # cluster_eventos = FeatureGroupSubGroup(cluster_eventos, "Eventos fijos futuros").add_to(base_map) #22-12 comentados los dos campos (solo se muestra le grupal)
-    # cluster_eventos = FeatureGroupSubGroup(cluster_eventos, "Eventos de tramo futuros").add_to(base_map)
     base_map.get_root().script.add_child(
     folium.Element(f"window.map = {base_map.get_name()};")
     )
-    base_map.save(output_file) # quito este save map porque es irrelevante, tengo otro al final
+    # base_map.save(output_file)
 
     def añadir_eventos(df, fijos_fg, tramos_fg):
         for _, event in df.iterrows():
@@ -258,7 +244,7 @@ def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
                 """
 
                 html_fin = f"""
-                <div data-provincia="{provincia} data-lat="{lat_fin}" data-lng="{lon_fin}">
+                <div data-provincia="{provincia}" data-lat="{lat_fin}" data-lng="{lon_fin}">
                     <b>FIN EVENTO FUTURO</b><br>ID: {event['id']}<br>{event['type']}<br>
                     {event['road']} (Km {event['kilometro_fin']})<br>
                     Hora esperada: {event['start_time']}
@@ -281,10 +267,9 @@ def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
 
     añadir_eventos(eventos_df, cluster_eventos, cluster_eventos)
     folium.LayerControl(collapsed=False).add_to(base_map)
-    base_map.save(output_file)
-
-
-
+    expose_leaflet_map(base_map)
+    # base_map.save(output_file)
+    save_atomic(base_map, output_file)
 
 # Actualizar el mapa
 def update_map():
@@ -308,17 +293,14 @@ def update_map():
     "Santa Cruz de Tenerife", "Santander", "Segovia", "Sevilla", "Soria", "Tarragona", "Teruel",
     "Toledo", "Valencia", "Valladolid", "Vitoria", "Zamora", "Zaragoza", "Ceuta", "Melilla"
     ]
-    opciones_provincia = "<br>".join([f'<option value="{prov}">{prov}</option>' for prov in provincias])
-    # print(opciones_provincia)
-    
+    opciones_provincia = "<br>".join([f'<option value="{prov}">{prov}</option>' for prov in provincias])    
 
-
-    # 4. Separar eventos en actuales y futuros
+    # 4. Separar eventos en actuales y futuros en base a la hora de inicio del evento
     now = datetime.now(timezone.utc)
     eventos_actuales = eventos_df[eventos_df["start_time_obj"] <= now]
     eventos_futuros = eventos_df[eventos_df["start_time_obj"] > now]
 
-    # 5. Generar mapas individuales
+    # 5. Generar mapas individuales para eventos actuales y eventos futuros
     create_actuales_map(eventos_actuales, radares_df, "mapas_generados/mapa_actuales.html")
     create_futuros_map(eventos_futuros, "mapas_generados/mapa_futuros.html")
 
@@ -335,7 +317,6 @@ def update_map():
     <meta charset="UTF-8">
     <title>Mapa de Tráfico</title>
     <style>
-        <style>
         body {{ font-family: sans-serif; margin: 0; padding: 0; overflow: hidden; height: 100vh; }}
         .layout {{ display: flex; height: 100vh; overflow: hidden; }}
         .sidebar {{ width: 250px; background: #f9f9f9; padding: 1em; box-shadow: 2px 0 5px rgba(0,0,0,0.1); }}
@@ -345,8 +326,6 @@ def update_map():
         .tab.active {{ background: #e0e0ff; border-left: 4px solid #007BFF; }}
         .map-container {{ display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; }}
         .map-container.active {{ display: block; }}
-</style>
-
     </style>
 </head>
 <body>
@@ -377,26 +356,12 @@ def update_map():
     
 
 <script>
-// Cargar mapas solo después de que estén listos (evita mapa en blanco)
-    function cargarIframes() {{
-        document.getElementById("iframe_actuales").src = "/mapa_actuales.html";
-        document.getElementById("iframe_futuros").src = "/mapa_futuros.html";
-    }}
+    document.getElementById("iframe_actuales").src =
+        "/mapa_actuales.html?ts=" + Date.now();
 
-    if (localStorage.getItem("mapas_cargados") !== "1") {{
-        fetch("/primera_actualizacion")
-            .then(res => res.text())
-            .then(data => {{
-                if (data === "1") {{
-                    localStorage.setItem("mapas_cargados", "1");
-                    cargarIframes();
-                }} else {{
-                    setTimeout(() => location.reload(), 1000); // espera y reintenta
-                }}
-            }});
-    }} else {{
-        cargarIframes();
-    }}
+    document.getElementById("iframe_futuros").src =
+        "/mapa_futuros.html?ts=" + Date.now();
+
     // Provincias y coordenadas para que se relacionen con las de la DGT (todas en mayusculas para que coincidan y se lean)
     const coordenadas_provincias = {{
     "A CORUÑA": [43.3623, -8.4115],
@@ -472,7 +437,7 @@ def update_map():
     // 🔄 Refrescar automáticamente cada 5 minutos
     setTimeout(() => {{
         location.reload();
-    }}, 30000);  // 300.000 ms = 5 minutos
+    }}, 30000);  // Actualmente está cada 30 segundos - 300.000 ms = 5 minutos
 
     // 🔍 Filtro por provincia con zoom
     document.getElementById("provinciaSelect").addEventListener("change", function () {{
@@ -514,11 +479,5 @@ def update_map():
         f.write(html_con_tabs)
 
     os.replace(temp_path, final_path)
-
-    # 9. Señal de que la primera actualización se completó
-    ok_flag = "mapas_generados/primera_actualizacion.ok"
-    if not os.path.exists(ok_flag):
-        with open(ok_flag, "w") as f:
-            f.write("ok")
 
     print("[✅] Mapa principal generado con pestañas en: mapas_generados/mapa_completo.html")
