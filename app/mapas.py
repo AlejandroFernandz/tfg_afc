@@ -52,7 +52,13 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
 
     def añadir_eventos(df, fijos_fg, tramos_fg):
         for _, event in df.iterrows():
-            icon_name, icon_color = icono_por_tipo(event["type"])
+            # icon_name, icon_color = icono_por_tipo(event["type"])
+            # icon_name, icon_color = icono_por_tipo(event.get("type_code", event["type"]))
+            # icon_name, icon_color = icono_por_tipo(event.get("icon_code") or event.get("cause_type") or event.get("type_code") or event["type"]) # 16/01
+            icon_name, icon_color = icono_por_tipo(event.get("cause_type") or "unknown") # 21-01
+
+
+
             provincia = event["provincia"]
 
             if pd.notna(event.get("latitude")) and pd.notna(event.get("longitude")):
@@ -61,16 +67,32 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                     lat += OFFSET
                     lon += OFFSET
                 added_locations.add((lat, lon))
-
+                # Comentado el 16/01
+                # html_popup = f"""
+                # <div data-provincia="{provincia}" data-lat="{lat}" data-lng="{lon}">
+                #     <b>EVENTO</b><br>ID: {event['id']}<br>{event['type']} ({event['probability']}) - {event['severity']}<br>
+                #     Carretera {event['road']} ({event['locality']}, Km {event['kilometro']})<br>
+                #     Sentido: {event['sentido_kilometracion']}<br>
+                #     Hora: {event['start_time']}<br>
+                #     Carril: {event['carril_usado']}
+                # </div>
+                # """
                 html_popup = f"""
                 <div data-provincia="{provincia}" data-lat="{lat}" data-lng="{lon}">
-                    <b>EVENTO</b><br>ID: {event['id']}<br>{event['type']} ({event['probability']}) - {event['severity']}<br>
+                    <b>{event['type']}</b><br>
+                    <b>{event.get('cause_type','')}</b><br>
+                    <i>{event.get('cause_detail','')}</i><br><br>
+
+                    ID: {event['id']}<br>
+                    Probabilidad: {event['probability']}<br>
+                    Severidad: {event['severity']}<br>
                     Carretera {event['road']} ({event['locality']}, Km {event['kilometro']})<br>
                     Sentido: {event['sentido_kilometracion']}<br>
                     Hora: {event['start_time']}<br>
                     Carril: {event['carril_usado']}
                 </div>
                 """
+
 
                 folium.Marker(
                     location=[lat, lon],
@@ -92,22 +114,53 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                     lat_fin += OFFSET
                     lon_fin += OFFSET
                 added_locations.add((lat_fin, lon_fin))
-
+                # Comentado el 16/01
+                # html_ini = f"""
+                # <div data-provincia="{provincia}" data-lat="{lat_ini}" data-lng="{lon_ini}">
+                #     <b>INICIO EVENTO</b><br>ID: {event['id']}<br>{event['type']}<br>
+                #     {event['road']} (Km {event['kilometro_ini']})<br>
+                #     Sentido: {event['sentido_kilometracion_ini']}<br>
+                #     Hora: {event['start_time']}<br>
+                #     Carril: {event['carril_usado']}
+                # </div>
+                # """
                 html_ini = f"""
                 <div data-provincia="{provincia}" data-lat="{lat_ini}" data-lng="{lon_ini}">
-                    <b>INICIO EVENTO</b><br>ID: {event['id']}<br>{event['type']}<br>
-                    {event['road']} (Km {event['kilometro_ini']})<br>
-                    Sentido: {event['sentido_kilometracion_ini']}<br>
+                    <b>{event['type']}</b><br>
+                    <b>{event.get('cause_type','')}</b><br>
+                    <i>{event.get('cause_detail','')}</i><br><br>
+
+                    ID: {event['id']}<br>
+                    Probabilidad: {event['probability']}<br>
+                    Severidad: {event['severity']}<br>
+                    Carretera {event['road']} ({event['locality']}, Km {event['kilometro_ini']})<br>
+                    Sentido: {event['sentido_kilometracion']}<br>
                     Hora: {event['start_time']}<br>
                     Carril: {event['carril_usado']}
                 </div>
                 """
 
+
+                # html_fin = f"""
+                # <div data-provincia="{provincia}" data-lat="{lat_fin}" data-lng="{lon_fin}">
+                #     <b>FIN EVENTO</b><br>ID: {event['id']}<br>{event['type']}<br>
+                #     {event['road']} (Km {event['kilometro_fin']})<br>
+                #     Hora: {event['start_time']}
+                # </div>
+                # """
                 html_fin = f"""
                 <div data-provincia="{provincia}" data-lat="{lat_fin}" data-lng="{lon_fin}">
-                    <b>FIN EVENTO</b><br>ID: {event['id']}<br>{event['type']}<br>
-                    {event['road']} (Km {event['kilometro_fin']})<br>
-                    Hora: {event['start_time']}
+                    <b>{event['type']}</b><br>
+                    <b>{event.get('cause_type','')}</b><br>
+                    <i>{event.get('cause_detail','')}</i><br><br>
+
+                    ID: {event['id']}<br>
+                    Probabilidad: {event['probability']}<br>
+                    Severidad: {event['severity']}<br>
+                    Carretera {event['road']} ({event['locality']}, Km {event['kilometro_fin']})<br>
+                    Sentido: {event['sentido_kilometracion']}<br>
+                    Hora: {event['start_time']}<br>
+                    Carril: {event['carril_usado']}
                 </div>
                 """
 
@@ -190,7 +243,10 @@ def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
 
     def añadir_eventos(df, fijos_fg, tramos_fg):
         for _, event in df.iterrows():
-            icon_name, icon_color = icono_por_tipo(event["type"])
+            # icon_name, icon_color = icono_por_tipo(event["type"])
+            # icon_name, icon_color = icono_por_tipo(event.get("type_code", event["type"]))
+            # icon_name, icon_color = icono_por_tipo(event.get("icon_code") or event.get("cause_type") or event.get("type_code") or event["type"]) # 16/01
+            icon_name, icon_color = icono_por_tipo(event.get("cause_type") or "unknown") # 21-01
             provincia = event["provincia"]
 
             # Eventos fijos
@@ -437,7 +493,7 @@ def update_map():
     // 🔄 Refrescar automáticamente cada 5 minutos
     setTimeout(() => {{
         location.reload();
-    }}, 30000);  // Actualmente está cada 30 segundos - 300.000 ms = 5 minutos
+    }}, 60000);  // Actualmente está cada 1 minuto - 300.000 ms = 5 minutos
 
     // 🔍 Filtro por provincia con zoom
     document.getElementById("provinciaSelect").addEventListener("change", function () {{
