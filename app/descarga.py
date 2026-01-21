@@ -3,7 +3,7 @@ import requests
 
 # Función para descargar los eventos del tráfico
 def download_trafico(file_path="data/trafico.xml"):
-    response = requests.get("https://infocar.dgt.es/datex2/v3/dgt/SituationPublication/incidencias.xml")
+    response = requests.get("https://nap.dgt.es/datex2/v3/dgt/SituationPublication/datex2_v36.xml")
     if response.status_code == 200:
         with open(file_path, "wb") as f:
             f.write(response.content)
