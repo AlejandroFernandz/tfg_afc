@@ -12,24 +12,138 @@ def safe_replace(src, dst, retries=5, delay=1):
     print(f"[ERROR] Fallo definitivo al mover {src} -> {dst}")
 
 # Funcion para asignar un icono distinto a los popups en base al tipo de EVENTO:
-def icono_por_tipo(tipo_evento):
+# def icono_por_tipo(tipo_evento):
+#     icon_map = {
+#         "Obras": ("person-digging", "orange"),
+#         "Desvío temporal": ("route", "darkblue"),
+#         "Tráfico denso": ("traffic-light", "darkred"),
+#         "Obstrucción de carretera": ("ban", "black"),
+#         "Obstrucción por vehículo": ("car-crash", "darkpurple"),
+#         "Evento público": ("users", "green"),
+#         "Obstrucción meteorológica": ("cloud-showers-heavy", "cadetblue"),
+#         "Gestión de velocidad": ("tachometer-alt", "lightgray"),
+#         "Malas condiciones meteorológicas": ("cloud", "blue"),
+#         "Trabajos de mantenimiento": ("tools", "gray"),
+#         "Gestión general de la carretera": ("cogs", "lightblue"),
+#         "Gestión de redireccionamiento": ("exchange-alt", "purple"),
+#         "Condiciones de carretera no relacionadas con la mateorologia": ("road", "lightgreen"),
+#         "Condiciones de carretera relacionadas con la meteorologia": ("snowflake", "lightblue")
+#     }
+#     return icon_map.get(tipo_evento, ("exclamation-triangle", "red"))  # Valor por defecto
+
+# def icono_por_tipo(tipo_evento):
+#     """
+#     10/01
+#     tipo_evento debe ser el type_code (ej: PoorEnvironmentConditions).
+#     Si recibe el texto jerárquico, también hace fallback.
+#     """
+
+#     icon_map = {
+#         # Obras
+#         # "Roadworks": ("person-digging", "orange"),
+#         # "MaintenanceWorks": ("tools", "gray"),
+
+#         # # Gestión
+#         # "RoadOrCarriagewayOrLaneManagement": ("route", "darkblue"),
+#         # "WinterDrivingManagement": ("snowplow", "lightblue"),
+#         # "SpeedManagement": ("tachometer-alt", "lightgray"),
+#         # "GeneralInstructionOrMessageToRoadUsers": ("bullhorn", "cadetblue"),
+#         # "NetworkManagement": ("cogs", "lightblue"),
+#         # "OperatorAction": ("cogs", "lightblue"),
+
+#         # # Tráfico / condiciones
+#         # "AbnormalTraffic": ("traffic-light", "darkred"),
+#         # "PoorEnvironmentConditions": ("cloud", "blue"),
+#         # "NonWeatherRelatedRoadConditions": ("road", "lightgreen"),
+#         # "TrafficElement": ("traffic-light", "darkred"),
+
+#         # # Obstrucciones
+#         # "VehicleObstruction": ("car-crash", "darkpurple"),
+#         # "AnimalPresenceObstruction": ("paw", "green"),
+#         # "GeneralObstruction": ("ban", "black"),
+#         # "Obstruction": ("ban", "black"),
+
+#         # # Servicios
+#         # "ServiceInformation": ("info-circle", "cadetblue"),
+#         # "TransitInformation": ("bus", "purple"),
+
+#         # # Genérico
+#         # "GenericSituationRecord": ("exclamation-circle", "red"),
+#         # 16/01
+#         "obstruction": ("ban", "black"),
+#         "vehicleObstruction": ("car-crash", "darkpurple"),
+#         "roadMaintenance": ("tools", "gray"),
+#         "enviromentalObstruction": ()
+
+#     }
+
+#     # Si llega el código exacto
+#     if tipo_evento in icon_map:
+#         return icon_map[tipo_evento]
+
+#     # Fallbacks por categoría textual (por si recibe "Tráfico: ...")
+#     tipo_evento_lower = tipo_evento.lower()
+
+#     if tipo_evento_lower.startswith("tráfico"):
+#         return ("traffic-light", "darkred")
+#     if tipo_evento_lower.startswith("obras"):
+#         return ("person-digging", "orange")
+#     if tipo_evento_lower.startswith("gestión"):
+#         return ("cogs", "lightblue")
+#     if tipo_evento_lower.startswith("obstrucción"):
+#         return ("ban", "black")
+#     if tipo_evento_lower.startswith("servicio"):
+#         return ("info-circle", "cadetblue")
+#     if tipo_evento_lower.startswith("genérico"):
+#         return ("exclamation-circle", "red")
+
+#     # Fallback final
+#     return ("exclamation-triangle", "red")
+
+
+# Nueva funcion de icono_por_tipo tras cambios en mapas.py el 21-01
+def icono_por_tipo(cause_type: str):
+    """
+    cause_type = valor de <sit:causeType>
+    Ej: "roadMaintenance", "vehicleObstruction", ...
+    """
+
     icon_map = {
-        "Obras": ("person-digging", "orange"),
-        "Desvío temporal": ("route", "darkblue"),
-        "Tráfico denso": ("traffic-light", "darkred"),
-        "Obstrucción de carretera": ("ban", "black"),
-        "Obstrucción por vehículo": ("car-crash", "darkpurple"),
-        "Evento público": ("users", "green"),
-        "Obstrucción meteorológica": ("cloud-showers-heavy", "cadetblue"),
-        "Gestión de velocidad": ("tachometer-alt", "lightgray"),
-        "Malas condiciones meteorológicas": ("cloud", "blue"),
-        "Trabajos de mantenimiento": ("tools", "gray"),
-        "Gestión general de la carretera": ("cogs", "lightblue"),
-        "Gestión de redireccionamiento": ("exchange-alt", "purple"),
-        "Condiciones de carretera no relacionadas con la mateorologia": ("road", "lightgreen"),
-        "Condiciones de carretera relacionadas con la meteorologia": ("snowflake", "lightblue")
+        # Accidentes
+        "accident": ("car-crash", "red"),  # si no te funciona, usa "car-crash"
+
+        # Meteorología / ambiente
+        "poorEnvironment": ("cloud-showers-heavy", "cadetblue"),
+        "environmentalObstruction": ("cloud-showers-heavy", "cadetblue"),
+
+        # Daños / infraestructura
+        "infrastructureDamageObstruction": ("triangle-exclamation", "orange"),
+
+        # Obstáculos genéricos
+        "obstruction": ("triangle-exclamation", "black"),
+
+        # Mantenimiento / obras
+        "roadMaintenance": ("tools", "gray"),
+
+        # Gestión de carril/carretera (desvíos, cierres, etc.)
+        "roadOrCarriagewayOrLaneManagement": ("route", "darkblue"),
+
+        # Vehículo obstaculizando
+        "vehicleObstruction": ("car-side", "darkpurple"),
+
+        # Trafico anómalo - Metido por mi
+        "abnormalTraffic": ("car-side", "darkred"),
     }
-    return icon_map.get(tipo_evento, ("exclamation-triangle", "red"))  # Valor por defecto
+
+    if not cause_type:
+        return ("exclamation-triangle", "red")
+
+    # normaliza por si llega con espacios
+    key = cause_type.strip()
+
+    return icon_map.get(key, ("exclamation-triangle", "red"))
+
+
 
 # Coordenadas para hacer la seleccion del zoom por provincias
 coordenadas_provincias = {
