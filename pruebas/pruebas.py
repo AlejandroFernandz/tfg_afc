@@ -218,3 +218,31 @@ causas = listar_cause_types("data/trafico.xml")
 for c in causas:
     print(c)
 
+# import xml.etree.ElementTree as ET
+
+# def listar_situation_record_types(file_path="trafico.xml"):
+#     tree = ET.parse(file_path)
+#     root = tree.getroot()
+
+#     ns = {
+#         "sit": "http://levelC/schema/3/situation",
+#         "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+#     }
+
+#     situation_types = set()
+
+#     for situation in root.findall(".//sit:situationRecord", namespaces=ns):
+#         xsi_type = situation.attrib.get(
+#             "{http://www.w3.org/2001/XMLSchema-instance}type"
+#         )
+#         if xsi_type:
+#             situation_types.add(xsi_type.strip())
+
+#     return sorted(situation_types)
+
+
+# tipos = listar_situation_record_types("data/trafico.xml")
+# for t in tipos:
+#     print(t)
+
+

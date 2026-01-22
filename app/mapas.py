@@ -2,7 +2,7 @@ import folium
 import os
 from folium.plugins import FeatureGroupSubGroup, MarkerCluster
 import pandas as pd
-from app.utilidades import icono_por_tipo, safe_replace
+from app.utilidades import icono_por_tipo, safe_replace, add_segment_line_js
 from app.descarga import *
 from app.parsing import *
 import schedule
@@ -52,12 +52,7 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
 
     def añadir_eventos(df, fijos_fg, tramos_fg):
         for _, event in df.iterrows():
-            # icon_name, icon_color = icono_por_tipo(event["type"])
-            # icon_name, icon_color = icono_por_tipo(event.get("type_code", event["type"]))
-            # icon_name, icon_color = icono_por_tipo(event.get("icon_code") or event.get("cause_type") or event.get("type_code") or event["type"]) # 16/01
-            icon_name, icon_color = icono_por_tipo(event.get("cause_type") or "unknown") # 21-01
-
-
+            icon_name, icon_color = icono_por_tipo(event.get("cause_type_raw") or "unknown") # 21-01
 
             provincia = event["provincia"]
 
@@ -67,16 +62,7 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                     lat += OFFSET
                     lon += OFFSET
                 added_locations.add((lat, lon))
-                # Comentado el 16/01
-                # html_popup = f"""
-                # <div data-provincia="{provincia}" data-lat="{lat}" data-lng="{lon}">
-                #     <b>EVENTO</b><br>ID: {event['id']}<br>{event['type']} ({event['probability']}) - {event['severity']}<br>
-                #     Carretera {event['road']} ({event['locality']}, Km {event['kilometro']})<br>
-                #     Sentido: {event['sentido_kilometracion']}<br>
-                #     Hora: {event['start_time']}<br>
-                #     Carril: {event['carril_usado']}
-                # </div>
-                # """
+
                 html_popup = f"""
                 <div data-provincia="{provincia}" data-lat="{lat}" data-lng="{lon}">
                     <b>{event['type']}</b><br>
@@ -114,18 +100,14 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                     lat_fin += OFFSET
                     lon_fin += OFFSET
                 added_locations.add((lat_fin, lon_fin))
-                # Comentado el 16/01
-                # html_ini = f"""
-                # <div data-provincia="{provincia}" data-lat="{lat_ini}" data-lng="{lon_ini}">
-                #     <b>INICIO EVENTO</b><br>ID: {event['id']}<br>{event['type']}<br>
-                #     {event['road']} (Km {event['kilometro_ini']})<br>
-                #     Sentido: {event['sentido_kilometracion_ini']}<br>
-                #     Hora: {event['start_time']}<br>
-                #     Carril: {event['carril_usado']}
-                # </div>
-                # """
+
+                seg_id = f"event_{event['id']}"
+
                 html_ini = f"""
-                <div data-provincia="{provincia}" data-lat="{lat_ini}" data-lng="{lon_ini}">
+                <div data-seg="{seg_id}"
+                    data-lat-ini="{lat_ini}" data-lng-ini="{lon_ini}"
+                    data-lat-fin="{lat_fin}" data-lng-fin="{lon_fin}"
+                    data-provincia="{provincia}" data-lat="{lat_ini}" data-lng="{lon_ini}">
                     <b>{event['type']}</b><br>
                     <b>{event.get('cause_type','')}</b><br>
                     <i>{event.get('cause_detail','')}</i><br><br>
@@ -133,23 +115,18 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                     ID: {event['id']}<br>
                     Probabilidad: {event['probability']}<br>
                     Severidad: {event['severity']}<br>
-                    Carretera {event['road']} ({event['locality']}, Km {event['kilometro_ini']})<br>
+                    Carretera {event['road']} ({event.get('locality_ini','Desconocido')}, Km {event['kilometro_ini']})<br>
                     Sentido: {event['sentido_kilometracion']}<br>
                     Hora: {event['start_time']}<br>
                     Carril: {event['carril_usado']}
                 </div>
                 """
 
-
-                # html_fin = f"""
-                # <div data-provincia="{provincia}" data-lat="{lat_fin}" data-lng="{lon_fin}">
-                #     <b>FIN EVENTO</b><br>ID: {event['id']}<br>{event['type']}<br>
-                #     {event['road']} (Km {event['kilometro_fin']})<br>
-                #     Hora: {event['start_time']}
-                # </div>
-                # """
                 html_fin = f"""
-                <div data-provincia="{provincia}" data-lat="{lat_fin}" data-lng="{lon_fin}">
+                <div data-seg="{seg_id}"
+                    data-lat-ini="{lat_ini}" data-lng-ini="{lon_ini}"
+                    data-lat-fin="{lat_fin}" data-lng-fin="{lon_fin}"
+                    data-provincia="{provincia}" data-lat="{lat_fin}" data-lng="{lon_fin}">
                     <b>{event['type']}</b><br>
                     <b>{event.get('cause_type','')}</b><br>
                     <i>{event.get('cause_detail','')}</i><br><br>
@@ -157,7 +134,7 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                     ID: {event['id']}<br>
                     Probabilidad: {event['probability']}<br>
                     Severidad: {event['severity']}<br>
-                    Carretera {event['road']} ({event['locality']}, Km {event['kilometro_fin']})<br>
+                    Carretera {event['road']} ({event.get('locality_fin','Desconocido')}, Km {event['kilometro_fin']})<br>
                     Sentido: {event['sentido_kilometracion']}<br>
                     Hora: {event['start_time']}<br>
                     Carril: {event['carril_usado']}
@@ -177,6 +154,7 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                     popup=folium.Popup(html_fin, max_width=300),
                     icon=folium.Icon(color=icon_color, icon=icon_name, prefix="fa")
                 ).add_to(tramos_fg)
+
 
     añadir_eventos(eventos_df, cluster_eventos, cluster_eventos)
 
@@ -201,13 +179,24 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                     icon=folium.Icon(color=icon_color, icon="tachometer-alt", prefix="fa")
                 ).add_to(cluster_radares)
                 added_radar_locations.add((lat, lon))
+
         else:
-            coords = [("INI", radar.get("latitude_ini"), radar.get("longitude_ini"), radar["radar_id_ini"]),
-                      ("FIN", radar.get("latitude_fin"), radar.get("longitude_fin"), radar["radar_id_fin"])]
+            seg_id = f"radar_{radar['radar_id_ini']}_{radar['radar_id_fin']}"
+            lat_ini_r, lon_ini_r = radar.get("latitude_ini"), radar.get("longitude_ini")
+            lat_fin_r, lon_fin_r = radar.get("latitude_fin"), radar.get("longitude_fin")
+
+            coords = [
+                ("INI", lat_ini_r, lon_ini_r, radar["radar_id_ini"]),
+                ("FIN", lat_fin_r, lon_fin_r, radar["radar_id_fin"])
+            ]
+
             for label, lat, lon, radar_id in coords:
                 if pd.notna(lat) and pd.notna(lon) and (lat, lon) not in added_radar_locations:
                     html = f"""
-                    <div data-provincia="{provincia}">
+                    <div data-seg="{seg_id}"
+                        data-lat-ini="{lat_ini_r}" data-lng-ini="{lon_ini_r}"
+                        data-lat-fin="{lat_fin_r}" data-lng-fin="{lon_fin_r}"
+                        data-provincia="{provincia}">
                         <b>RADAR TRAMO - {label}</b><br>ID: {radar_id}<br>
                         {radar['road']} (Km {radar['kilometro']})<br>
                         Sentido: {radar['sentido_kilometracion']}
@@ -217,15 +206,21 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                         location=[lat, lon],
                         tooltip=f"{radar['type']}<br>{provincia}",
                         popup=folium.Popup(html, max_width=300),
-                        icon=folium.Icon(color=icon_color, icon="arrow-right" if label == "FIN" else "arrow-left", prefix="fa")
+                        icon=folium.Icon(
+                            color=icon_color,
+                            icon="arrow-right" if label == "FIN" else "arrow-left",
+                            prefix="fa"
+                        )
                     ).add_to(cluster_radares)
                     added_radar_locations.add((lat, lon))
+
 
     folium.LayerControl(collapsed=False).add_to(base_map)
     base_map.get_root().script.add_child(
     folium.Element(f"window.map = {base_map.get_name()};")) ### 28/12 correcto
     expose_leaflet_map(base_map)
     # base_map.save(output_file)
+    add_segment_line_js(base_map, max_km=50) # 21-01 para segmentos entre popups
     save_atomic(base_map, output_file)
 
 def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
@@ -243,10 +238,7 @@ def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
 
     def añadir_eventos(df, fijos_fg, tramos_fg):
         for _, event in df.iterrows():
-            # icon_name, icon_color = icono_por_tipo(event["type"])
-            # icon_name, icon_color = icono_por_tipo(event.get("type_code", event["type"]))
-            # icon_name, icon_color = icono_por_tipo(event.get("icon_code") or event.get("cause_type") or event.get("type_code") or event["type"]) # 16/01
-            icon_name, icon_color = icono_por_tipo(event.get("cause_type") or "unknown") # 21-01
+            icon_name, icon_color = icono_por_tipo(event.get("cause_type_raw") or "unknown") # 21-01
             provincia = event["provincia"]
 
             # Eventos fijos
@@ -274,7 +266,7 @@ def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
                     icon=folium.Icon(color="purple", icon=icon_name, prefix="fa")
                 ).add_to(fijos_fg)
 
-            # Eventos de tramo
+
             if pd.notna(event.get("latitude_ini")) and pd.notna(event.get("longitude_ini")):
                 lat_ini, lon_ini = event["latitude_ini"], event["longitude_ini"]
                 lat_fin, lon_fin = event["latitude_fin"], event["longitude_fin"]
@@ -289,10 +281,15 @@ def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
                     lon_fin += OFFSET
                 added_locations.add((lat_fin, lon_fin))
 
+                seg_id = f"event_{event['id']}"
+
                 html_ini = f"""
-                <div data-provincia="{provincia}" data-lat="{lat_ini}" data-lng="{lon_ini}">
+                <div data-seg="{seg_id}"
+                    data-lat-ini="{lat_ini}" data-lng-ini="{lon_ini}"
+                    data-lat-fin="{lat_fin}" data-lng-fin="{lon_fin}"
+                    data-provincia="{provincia}" data-lat="{lat_ini}" data-lng="{lon_ini}">
                     <b>INICIO EVENTO FUTURO</b><br>ID: {event['id']}<br>{event['type']}<br>
-                    {event['road']} (Km {event['kilometro_ini']})<br>
+                    {event['road']} ({event.get('locality_ini','Desconocido')}, Km {event['kilometro_ini']})<br>
                     Sentido: {event['sentido_kilometracion_ini']}<br>
                     Hora esperada: {event['start_time']}<br>
                     Carril: {event['carril_usado']}
@@ -300,9 +297,12 @@ def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
                 """
 
                 html_fin = f"""
-                <div data-provincia="{provincia}" data-lat="{lat_fin}" data-lng="{lon_fin}">
+                <div data-seg="{seg_id}"
+                    data-lat-ini="{lat_ini}" data-lng-ini="{lon_ini}"
+                    data-lat-fin="{lat_fin}" data-lng-fin="{lon_fin}"
+                    data-provincia="{provincia}" data-lat="{lat_fin}" data-lng="{lon_fin}">
                     <b>FIN EVENTO FUTURO</b><br>ID: {event['id']}<br>{event['type']}<br>
-                    {event['road']} (Km {event['kilometro_fin']})<br>
+                    {event['road']} ({event.get('locality_fin','Desconocido')}, Km {event['kilometro_fin']})<br>
                     Hora esperada: {event['start_time']}
                 </div>
                 """
@@ -321,10 +321,12 @@ def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
                     icon=folium.Icon(color="purple", icon=icon_name, prefix="fa")
                 ).add_to(tramos_fg)
 
+
     añadir_eventos(eventos_df, cluster_eventos, cluster_eventos)
     folium.LayerControl(collapsed=False).add_to(base_map)
     expose_leaflet_map(base_map)
     # base_map.save(output_file)
+    add_segment_line_js(base_map, max_km=50)   # 22-01 para segmentos entre popups
     save_atomic(base_map, output_file)
 
 # Actualizar el mapa
