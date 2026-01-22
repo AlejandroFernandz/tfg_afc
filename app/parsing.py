@@ -6,7 +6,7 @@ import pandas as pd
 # 10/01 traducciones nuevas sobre actualizacion del dataset, y nuevo formato implementado categoria: subcategoria
 # --- Traducciones y jerarquía de tipos (DGT profile v3.6) ---
 
-# Categorias principales traducidas
+# Subtitulos de eventos traducidos
 CAT_EVENT_TYPE = {
     "GenericSituationRecord": "Genérico",
 
@@ -38,7 +38,7 @@ CAT_EVENT_TYPE = {
 
     "Accident": "Accidente"
 }
-# Subcategorias traducidas
+# Titulo principal traducido (situationRecord xsi:type)
 TRAD_EVENT_TYPE = {
     "GenericSituationRecord": "Incidencia genérica",
 
@@ -69,6 +69,50 @@ TRAD_EVENT_TYPE = {
     "TransitInformation": "Información de transporte público",
 
     "Accident": "Accidente en la vía "
+}
+
+# Subtitulos de eventos traducidos
+# Traducciones para causeType (valores que vienen en sit:causeType) # 22-01
+TRAD_CAUSE_TYPE = {
+    "abnormalTraffic": "Tráfico anómalo",
+    "accident": "Accidente",
+    "environmentalObstruction": "Obstrucción por condiciones ambientales",
+    "infrastructureDamageObstruction": "Daños en la infraestructura",
+    "obstruction": "Obstrucción",
+    "poorEnvironment": "Condiciones meteorológicas adversas",
+    "roadMaintenance": "Mantenimiento de la vía",
+    "roadOrCarriagewayOrLaneManagement": "Gestión de carril / calzada",
+    "vehicleObstruction": "Obstrucción por vehículo",
+}
+# Traducciones para detailedCauseType (cause_detail)
+TRAD_CAUSE_DETAIL = {
+    # Obstrucciones
+    "objectOnTheRoad": "Objeto en la vía",
+    "vehicleStuck": "Vehículo atascado",
+    "vehicleOnFire": "Vehículo en llamas",
+    "animalsOnTheRoad": "Animales en la calzada",
+
+    # Tráfico / accidentes
+    "accident": "Accidente",
+    "seriousAccident": "Accidente grave",
+    "multiVehicleAccident": "Accidente múltiple",
+
+    # Obras / mantenimiento
+    "roadworks": "Obras",
+    "maintenanceWorks": "Trabajos de mantenimiento",
+    "resurfacing": "Reasfaltado",
+    "laneClosures": "Cierre de carriles",
+
+    # Meteorología
+    "heavyRain": "Lluvias intensas",
+    "snow": "Nieve",
+    "ice": "Hielo",
+    "fog": "Niebla",
+    "strongWinds": "Viento fuerte",
+
+    # Infraestructura
+    "bridgeDamage": "Daños en puente",
+    "tunnelClosure": "Cierre de túnel",
 }
 
 
@@ -112,6 +156,12 @@ def parse_datex(file_path="trafico.xml"):
         # Tipo real basado en la causa (si existe) - prueba 10/01
         cause_type_el = situation.find(".//sit:cause/sit:causeType", namespaces=ns)
         cause_type = cause_type_el.text.strip() if (cause_type_el is not None and cause_type_el.text) else None
+        # 22-01 nuevas variables para traduir subtitulo y detalle
+        cause_type_raw = cause_type  # lo original del XML
+        cause_type_trad = TRAD_CAUSE_TYPE.get(cause_type_raw, CAT_EVENT_TYPE.get(cause_type_raw, cause_type_raw)) if cause_type_raw else None
+
+
+        
         #16/01
         cause_detail = None
         detailed_el = situation.find(".//sit:cause/sit:detailedCauseType", namespaces=ns)
@@ -120,18 +170,13 @@ def parse_datex(file_path="trafico.xml"):
                 if child is not None and child.text and child.text.strip():
                     cause_detail = child.text.strip()
                     break
-        icon_code = cause_type or event_type_code # 16/01 para poner el icono como el causeType
+        
+        # 22-01
+        # Guardamos raw y traducción de cause_detail
+        cause_detail_raw = cause_detail
+        cause_detail_trad = TRAD_CAUSE_DETAIL.get(cause_detail_raw, cause_detail_raw)
 
-
-        # Comentado el 16/01
-        # def camel_to_pascal(s: str) -> str:
-        #     return s[:1].upper() + s[1:] if s else s
-        # cause_code = camel_to_pascal(cause_type) if cause_type else None
-
-        # effective_type_code = cause_code if (event_type_code == "GenericSituationRecord" and cause_code) else event_type_code
-        # event_type_label = etiqueta_jerarquica(effective_type_code) # HASTA AQUI EL CODIGO DE LA PRUEBA
-
-        # event_type_label = etiqueta_jerarquica(event_type_code)  # 10/01, traducción jerárquica que se va a mostrar en el popup PROBANDO LA LINEA DE ARRIBA
+        icon_code = cause_type_raw or event_type_code # 16/01 para poner el icono como el causeType
 
         probability_el = situation.find("sit:probabilityOfOccurrence", namespaces=ns)
         probability = probability_el.text if probability_el is not None else None
@@ -175,25 +220,7 @@ def parse_datex(file_path="trafico.xml"):
         # Traducciones (las tuyas)
         traducciones_severity = {"low": "Baja", "medium": "Media", "high": "Alta", "highest": "Muy alta"}
         traducciones_probabilidad = {"riskOf": "riesgo posible", "certain": "evento confirmado", "probable": "evento probable"}
-        # traducciones_event_type = {
-        #     "ConstructionWorks": "Obras",
-        #     "RoadOrCarriagewayOrLaneManagement": "Desvío temporal",
-        #     "AbnormalTraffic": "Tráfico denso",
-        #     "GeneralObstruction": "Obstrucción de carretera",
-        #     "VehicleObstruction": "Obstrucción por vehículo",
-        #     "PublicEvent": "Evento público",
-        #     "EnvironmentalObstruction": "Obstrucción meteorológica",
-        #     "SpeedManagement": "Gestión de velocidad",
-        #     "PoorEnvironmentConditions": "Malas condiciones meteorológicas",
-        #     "MaintenanceWorks": "Trabajos de mantenimiento",
-        #     "GeneralNetworkManagement": "Gestión general de la carretera",
-        #     "ReroutingManagement": "Gestión de redireccionamiento",
-        #     "NonWeatherRelatedRoadConditions": "Condiciones de carretera no relacionadas con la meteorología",
-        #     "WeatherRelatedRoadConditions": "Condiciones de carretera relacionadas con la meteorología",
-        #     "Winterdrivingmanagement": "Gestión de la conducción invernal",
-        #     "DisturbanceActivity": "Actividad de perturbación",
-        #     "AnimalPresenceObstruction": "Obstrucción por presencia de animales",
-        # }
+
         traducciones_carril = {
             "middleLane": "Carril central",
             "rightLane": "Carril derecho",
@@ -205,9 +232,6 @@ def parse_datex(file_path="trafico.xml"):
         }
         traducciones_sentido = {"both": "Ambos", "aligned": "Creciente a la kilometración", "opposite": "Decreciente a la kilometración"}
 
-        # event_type = traducciones_event_type.get(event_type, event_type)
-        # event_type = etiqueta_jerarquica(event_type)  # 10/01 ya no hace falta porque lo guardo mas arriba como label
-
         carril_usado = traducciones_carril.get(carril_usado, carril_usado)
         sentido_kilometracion_ini = traducciones_sentido.get(sentido_kilometracion_ini, sentido_kilometracion_ini)
         probability = traducciones_probabilidad.get(probability, "desconocida")
@@ -215,9 +239,15 @@ def parse_datex(file_path="trafico.xml"):
 
         # LocationReference: en tu XML es sit:locationReference con tpegLinearLocation y from/to
         for location_ref in situation.findall(".//sit:locationReference", namespaces=ns):
-            # Municipality como "locality" (si existe)
-            mun_el = location_ref.find(".//lse:municipality", namespaces=ns)
-            locality = mun_el.text if mun_el is not None else "Desconocido"
+
+            # Municipality para tramo (INI y FIN) y para punto fijo 22-01
+            mun_ini_el = location_ref.find(".//loc:from//lse:municipality", namespaces=ns)
+            mun_fin_el = location_ref.find(".//loc:to//lse:municipality", namespaces=ns)
+            mun_point_el = location_ref.find(".//loc:tpegPointLocation//lse:municipality", namespaces=ns)
+
+            locality_ini = mun_ini_el.text.strip() if (mun_ini_el is not None and mun_ini_el.text) else "Desconocido"
+            locality_fin = mun_fin_el.text.strip() if (mun_fin_el is not None and mun_fin_el.text) else "Desconocido"
+            locality_point = mun_point_el.text.strip() if (mun_point_el is not None and mun_point_el.text) else "Desconocido"
 
             # Evento de tramo: hay from y to con pointCoordinates
             from_coords = location_ref.find(".//loc:from/loc:pointCoordinates", namespaces=ns)
@@ -236,14 +266,18 @@ def parse_datex(file_path="trafico.xml"):
                         "start_time": formatted_time,
                         "type": event_title,      # 16/01
                         "type_code": event_type_code,  # 10/01 esto se guarda para posibles filtros internos y para los iconos, no se muestra en el popup
-                        "cause_type": cause_type, # 16/01
-                        "cause_detail": cause_detail, #16/01
+                        # "cause_type": cçause_type, # 16/01 # 22-01
+                        # "cause_detail": cause_detail, #16/01 # 22-01
                         "icon_code": icon_code, # Para meter el icono del causeType 16/01
                         "type_record_code": event_type_code,      # el xsi:type original (opcional pero útil)
-                        "cause_type": cause_type, # 10/01 opcional por si se depura
+                        "cause_type": cause_type_trad,          # lo que se muestra en popup
+                        "cause_type_raw": cause_type_raw,       # para iconos / lógica interna
+                        "cause_detail": cause_detail_trad,      # lo que se muestra # 22-01
+                        "cause_detail_raw": cause_detail_raw,   # por si lo necesitas para lógica interna # 22-01
                         "probability": probability,
                         "severity": severity,
-                        "locality": locality,
+                        "locality_ini": locality_ini, # 22-01
+                        "locality_fin": locality_fin, # 22-01
                         "latitude_ini": float(lat_ini.text),
                         "longitude_ini": float(lon_ini.text),
                         "latitude_fin": float(lat_fin.text),
@@ -259,9 +293,17 @@ def parse_datex(file_path="trafico.xml"):
 
             # (Opcional) Evento punto fijo: si en algún caso aparece loc:pointCoordinates suelto
             point_coords = location_ref.find(".//loc:tpegPointLocation//loc:pointCoordinates", namespaces=ns) # Cambio de la ruta, añadiendo tpegPointLocation para que sea mas específico
+            # Kilómetro para evento punto fijo (ruta del XML de PointLocation)
+
+
             if point_coords is not None:
                 lat = point_coords.find("loc:latitude", namespaces=ns)
                 lon = point_coords.find("loc:longitude", namespaces=ns)
+                km_point_el = location_ref.find( # 22-01 para meter el km en evento fijo
+                ".//loc:tpegPointLocation//loc:point//lse:kilometerPoint",
+                namespaces=ns)
+                kilometro_punto = float(km_point_el.text) if (km_point_el is not None and km_point_el.text) else None # 22-01 para meter el km en evento fijo
+
                 if lat is not None and lon is not None and lat.text and lon.text:
                     events.append({
                         "id": record_id,
@@ -269,17 +311,20 @@ def parse_datex(file_path="trafico.xml"):
                         "start_time": formatted_time,
                         "type": event_title,      # 10/01 esto es lo que se mostrará en el popup
                         "type_code": event_type_code,  # 10/01 esto se guarda para posibles filtros internos y para los iconos, no se muestra en el popup
-                        "cause_type": cause_type, # 10/01 opcional por si se depura
-                        "cause_detail": cause_detail,   # subtítulo (detailedCauseType/*Type)
+                        # "cause_type": cause_type, # 10/01 opcional por si se depura
+                        "cause_type": cause_type_trad,          # lo que se muestra en popup
+                        "cause_type_raw": cause_type_raw,       # para iconos / lógica interna
+                        "cause_detail": cause_detail_trad,   # subtítulo (detailedCauseType/*Type) # 22-01
+                        "cause_detail_raw": cause_detail_raw,   # por si lo necesitas para lógica interna # 22-01
                         "icon_code": icon_code, # 16/01 Para meter el icono del causeType
                         "type_record_code": event_type_code,      # el xsi:type original (opcional pero útil)
                         "probability": probability,
                         "severity": severity,
-                        "locality": locality,
+                        "locality": locality_point, # 22-01
                         "latitude": float(lat.text),
                         "longitude": float(lon.text),
                         "carril_usado": carril_usado,
-                        "kilometro": "Km desconocido",
+                        "kilometro": kilometro_punto if kilometro_punto is not None else "Km desconocido",
                         "sentido_kilometracion": sentido_kilometracion_ini,
                         "provincia": provincia,
                         "start_time_obj": start_time_obj,
@@ -293,8 +338,6 @@ def parse_datex(file_path="trafico.xml"):
         df["start_time_obj"] = pd.to_datetime(df["start_time_obj"], utc=True, errors="coerce")
 
     return df
-
-
 
 # RADARES - PARSER
 def parse_radares(file_path="radares.xml"):
