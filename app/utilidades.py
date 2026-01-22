@@ -1,5 +1,6 @@
 import time
 import shutil
+import folium
 
 def safe_replace(src, dst, retries=5, delay=1):
     for i in range(retries):
@@ -10,95 +11,6 @@ def safe_replace(src, dst, retries=5, delay=1):
             print(f"[WARN] Intento {i+1}: no se pudo reemplazar el archivo. Reintentando en {delay}s...")
             time.sleep(delay)
     print(f"[ERROR] Fallo definitivo al mover {src} -> {dst}")
-
-# Funcion para asignar un icono distinto a los popups en base al tipo de EVENTO:
-# def icono_por_tipo(tipo_evento):
-#     icon_map = {
-#         "Obras": ("person-digging", "orange"),
-#         "Desvío temporal": ("route", "darkblue"),
-#         "Tráfico denso": ("traffic-light", "darkred"),
-#         "Obstrucción de carretera": ("ban", "black"),
-#         "Obstrucción por vehículo": ("car-crash", "darkpurple"),
-#         "Evento público": ("users", "green"),
-#         "Obstrucción meteorológica": ("cloud-showers-heavy", "cadetblue"),
-#         "Gestión de velocidad": ("tachometer-alt", "lightgray"),
-#         "Malas condiciones meteorológicas": ("cloud", "blue"),
-#         "Trabajos de mantenimiento": ("tools", "gray"),
-#         "Gestión general de la carretera": ("cogs", "lightblue"),
-#         "Gestión de redireccionamiento": ("exchange-alt", "purple"),
-#         "Condiciones de carretera no relacionadas con la mateorologia": ("road", "lightgreen"),
-#         "Condiciones de carretera relacionadas con la meteorologia": ("snowflake", "lightblue")
-#     }
-#     return icon_map.get(tipo_evento, ("exclamation-triangle", "red"))  # Valor por defecto
-
-# def icono_por_tipo(tipo_evento):
-#     """
-#     10/01
-#     tipo_evento debe ser el type_code (ej: PoorEnvironmentConditions).
-#     Si recibe el texto jerárquico, también hace fallback.
-#     """
-
-#     icon_map = {
-#         # Obras
-#         # "Roadworks": ("person-digging", "orange"),
-#         # "MaintenanceWorks": ("tools", "gray"),
-
-#         # # Gestión
-#         # "RoadOrCarriagewayOrLaneManagement": ("route", "darkblue"),
-#         # "WinterDrivingManagement": ("snowplow", "lightblue"),
-#         # "SpeedManagement": ("tachometer-alt", "lightgray"),
-#         # "GeneralInstructionOrMessageToRoadUsers": ("bullhorn", "cadetblue"),
-#         # "NetworkManagement": ("cogs", "lightblue"),
-#         # "OperatorAction": ("cogs", "lightblue"),
-
-#         # # Tráfico / condiciones
-#         # "AbnormalTraffic": ("traffic-light", "darkred"),
-#         # "PoorEnvironmentConditions": ("cloud", "blue"),
-#         # "NonWeatherRelatedRoadConditions": ("road", "lightgreen"),
-#         # "TrafficElement": ("traffic-light", "darkred"),
-
-#         # # Obstrucciones
-#         # "VehicleObstruction": ("car-crash", "darkpurple"),
-#         # "AnimalPresenceObstruction": ("paw", "green"),
-#         # "GeneralObstruction": ("ban", "black"),
-#         # "Obstruction": ("ban", "black"),
-
-#         # # Servicios
-#         # "ServiceInformation": ("info-circle", "cadetblue"),
-#         # "TransitInformation": ("bus", "purple"),
-
-#         # # Genérico
-#         # "GenericSituationRecord": ("exclamation-circle", "red"),
-#         # 16/01
-#         "obstruction": ("ban", "black"),
-#         "vehicleObstruction": ("car-crash", "darkpurple"),
-#         "roadMaintenance": ("tools", "gray"),
-#         "enviromentalObstruction": ()
-
-#     }
-
-#     # Si llega el código exacto
-#     if tipo_evento in icon_map:
-#         return icon_map[tipo_evento]
-
-#     # Fallbacks por categoría textual (por si recibe "Tráfico: ...")
-#     tipo_evento_lower = tipo_evento.lower()
-
-#     if tipo_evento_lower.startswith("tráfico"):
-#         return ("traffic-light", "darkred")
-#     if tipo_evento_lower.startswith("obras"):
-#         return ("person-digging", "orange")
-#     if tipo_evento_lower.startswith("gestión"):
-#         return ("cogs", "lightblue")
-#     if tipo_evento_lower.startswith("obstrucción"):
-#         return ("ban", "black")
-#     if tipo_evento_lower.startswith("servicio"):
-#         return ("info-circle", "cadetblue")
-#     if tipo_evento_lower.startswith("genérico"):
-#         return ("exclamation-circle", "red")
-
-#     # Fallback final
-#     return ("exclamation-triangle", "red")
 
 
 # Nueva funcion de icono_por_tipo tras cambios en mapas.py el 21-01
@@ -197,3 +109,199 @@ coordenadas_provincias = {
     "Melilla": [35.2923, -2.9381],
     "Todas": [40.4168, -3.7038]
 }
+
+
+# Funcion para generar el segmento entre los popups de eventos y radares de tramo
+
+import folium
+
+# def add_segment_line_js(base_map):
+#     """
+#     - Al abrir un popup con data-seg + coords ini/fin, dibuja una línea entre ambos puntos.
+#     - La línea se mantiene hasta click en el mapa (fuera de popups) o hasta abrir otro popup de tramo.
+#     - Soporta popup.getContent() como string o HTMLElement.
+#     """
+#     map_var = base_map.get_name()
+#     js = f"""
+#     <script>
+#     (function() {{
+#       function bindWhenReady() {{
+#         // En folium, el objeto mapa (var) puede no estar disponible todavía cuando se inyecta este script
+#         if (typeof {map_var} === "undefined" || !{map_var}) {{
+#           setTimeout(bindWhenReady, 50);
+#           return;
+#         }}
+#         var map = {map_var};
+
+#         // Línea activa (solo una a la vez)
+#         window.__activeSegmentLine = window.__activeSegmentLine || null;
+
+#         function removeActiveLine() {{
+#           if (window.__activeSegmentLine) {{
+#             try {{ map.removeLayer(window.__activeSegmentLine); }} catch(e) {{}}
+#             window.__activeSegmentLine = null;
+#           }}
+#         }}
+
+#         function extractSegData(popupContent) {{
+#           // popupContent puede ser string HTML o HTMLElement
+#           var el = null;
+
+#           if (!popupContent) return null;
+
+#           if (typeof popupContent === "string") {{
+#             var wrapper = document.createElement("div");
+#             wrapper.innerHTML = popupContent;
+#             el = wrapper.querySelector("div[data-seg]");
+#           }} else if (popupContent instanceof HTMLElement) {{
+#             el = popupContent.querySelector("div[data-seg]") || (popupContent.matches && popupContent.matches("div[data-seg]") ? popupContent : null);
+#           }} else {{
+#             return null;
+#           }}
+
+#           if (!el) return null;
+
+#           var seg = el.dataset.seg;
+#           var latIni = parseFloat(el.dataset.latIni);
+#           var lngIni = parseFloat(el.dataset.lngIni);
+#           var latFin = parseFloat(el.dataset.latFin);
+#           var lngFin = parseFloat(el.dataset.lngFin);
+
+#           if (!seg || [latIni, lngIni, latFin, lngFin].some(x => Number.isNaN(x))) return null;
+
+#           return {{ seg, latIni, lngIni, latFin, lngFin }};
+#         }}
+
+#         // 1) Cuando abres un popup:
+#         // - Si es de tramo -> dibuja/actualiza la línea
+#         // - Si NO es de tramo -> quita la línea (para que no se quede una línea "vieja" al abrir un punto fijo)
+#         map.on("popupopen", function(e) {{
+#           var content = e.popup && e.popup.getContent ? e.popup.getContent() : null;
+#           var data = extractSegData(content);
+
+#           if (!data) {{
+#             // popup no-tramo => quitamos línea
+#             removeActiveLine();
+#             return;
+#           }}
+
+#           // popup de tramo => reemplazamos la línea
+#           removeActiveLine();
+
+#           window.__activeSegmentLine = L.polyline(
+#             [[data.latIni, data.lngIni], [data.latFin, data.lngFin]]
+#           ).addTo(map);
+#         }});
+
+#         // 2) Click en el mapa (fuera de popups) => quita la línea
+#         // Nota: click dentro del popup normalmente no burbujea al mapa.
+#         map.on("click", function() {{
+#           removeActiveLine();
+#         }});
+#       }}
+
+#       bindWhenReady();
+#     }})();
+#     </script>
+#     """
+#     base_map.get_root().html.add_child(folium.Element(js))
+
+
+import folium
+
+def add_segment_line_js(base_map, max_km=50):
+    """
+    Dibuja una línea entre INI y FIN al abrir un popup de tramo, pero SOLO si
+    la distancia INI–FIN <= max_km.
+    La línea se mantiene hasta click en el mapa (fuera de popups) o abrir otro tramo.
+    """
+    map_var = base_map.get_name()
+    js = f"""
+    <script>
+    (function() {{
+      function bindWhenReady() {{
+        if (typeof {map_var} === "undefined" || !{map_var}) {{
+          setTimeout(bindWhenReady, 50);
+          return;
+        }}
+        var map = {map_var};
+
+        window.__activeSegmentLine = window.__activeSegmentLine || null;
+
+        function removeActiveLine() {{
+          if (window.__activeSegmentLine) {{
+            try {{ map.removeLayer(window.__activeSegmentLine); }} catch(e) {{}}
+            window.__activeSegmentLine = null;
+          }}
+        }}
+
+        function extractSegData(popupContent) {{
+          var el = null;
+          if (!popupContent) return null;
+
+          if (typeof popupContent === "string") {{
+            var wrapper = document.createElement("div");
+            wrapper.innerHTML = popupContent;
+            el = wrapper.querySelector("div[data-seg]");
+          }} else if (popupContent instanceof HTMLElement) {{
+            el = popupContent.querySelector("div[data-seg]") ||
+                 ((popupContent.matches && popupContent.matches("div[data-seg]")) ? popupContent : null);
+          }} else {{
+            return null;
+          }}
+
+          if (!el) return null;
+
+          var seg = el.dataset.seg;
+          var latIni = parseFloat(el.dataset.latIni);
+          var lngIni = parseFloat(el.dataset.lngIni);
+          var latFin = parseFloat(el.dataset.latFin);
+          var lngFin = parseFloat(el.dataset.lngFin);
+
+          if (!seg || [latIni, lngIni, latFin, lngFin].some(x => Number.isNaN(x))) return null;
+
+          return {{ seg: seg, latIni: latIni, lngIni: lngIni, latFin: latFin, lngFin: lngFin }};
+        }}
+
+        map.on("popupopen", function(e) {{
+          var content = e.popup && e.popup.getContent ? e.popup.getContent() : null;
+          var data = extractSegData(content);
+
+          if (!data) {{
+            // popup no-tramo => quitamos línea
+            removeActiveLine();
+            return;
+          }}
+
+          // popup de tramo => reemplazamos la línea
+          removeActiveLine();
+
+          // ✅ umbral de distancia (km)
+          var MAX_KM = {float(max_km)};
+
+          // Leaflet devuelve metros
+          var dMeters = map.distance([data.latIni, data.lngIni], [data.latFin, data.lngFin]);
+          var dKm = dMeters / 1000;
+
+          if (dKm <= MAX_KM) {{
+            window.__activeSegmentLine = L.polyline(
+              [[data.latIni, data.lngIni], [data.latFin, data.lngFin]]
+            ).addTo(map);
+          }} else {{
+            // Si prefieres NO borrar la línea anterior al abrir un tramo largo,
+            // mueve removeActiveLine() dentro del if (dKm <= MAX_KM)
+            // console.log("Segmento demasiado largo:", dKm.toFixed(1), "km");
+          }}
+        }});
+
+        // Click fuera de popups => quita la línea
+        map.on("click", function() {{
+          removeActiveLine();
+        }});
+      }}
+
+      bindWhenReady();
+    }})();
+    </script>
+    """
+    base_map.get_root().html.add_child(folium.Element(js))
