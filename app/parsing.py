@@ -219,9 +219,11 @@ def parse_datex(file_path="trafico.xml"):
 
         # Traducciones (las tuyas)
         traducciones_severity = {"low": "Baja", "medium": "Media", "high": "Alta", "highest": "Muy alta"}
-        traducciones_probabilidad = {"riskOf": "riesgo posible", "certain": "evento confirmado", "probable": "evento probable"}
+        traducciones_probabilidad = {"riskOf": "posible riesgo", "certain": "confirmado", "probable": "probable"}
 
         traducciones_carril = {
+            "allLanesCompleteCarriageway": "Todos los carriles de la calzada",
+            "tidalFlowLane": "Carril reversible",
             "middleLane": "Carril central",
             "rightLane": "Carril derecho",
             "leftLane": "Carril izquierdo",
@@ -229,8 +231,12 @@ def parse_datex(file_path="trafico.xml"):
             "centralReservation": "Mediana central entre carriles bidireccionales",
             "turningLane": "Carril de giro",
             "carPoolLane": "Carril compartido",
+            "_extended": "Carril especial",
         }
-        traducciones_sentido = {"both": "Ambos", "aligned": "Creciente a la kilometración", "opposite": "Decreciente a la kilometración"}
+        traducciones_sentido = {
+            "both": "Ambos",
+            "negative": "Decreciente de la km",
+            "positive": "Creciente de la km",}
 
         carril_usado = traducciones_carril.get(carril_usado, carril_usado)
         sentido_kilometracion_ini = traducciones_sentido.get(sentido_kilometracion_ini, sentido_kilometracion_ini)
@@ -369,9 +375,9 @@ def parse_radares(file_path="radares.xml"):
 
         sentido_kilometracion = predefined_location.find(".//_0:directionRelative", namespaces=ns).text # Sentido RADAR FIJO y RADAR DE TRAMO
         if sentido_kilometracion == "negative":
-            sentido_kilometracion = "Decreciente de la kilometración"
+            sentido_kilometracion = "Decreciente de la km"
         else:
-            sentido_kilometracion = "Creciente de la kilometracion"
+            sentido_kilometracion = "Creciente de la km"
         
         # En el caso de que el radar sea de cabina (solo un par de coordenadas, un punto en el mapa)
         location_point = predefined_location.find(".//_0:point/_0:pointCoordinates", namespaces=ns)

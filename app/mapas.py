@@ -65,19 +65,28 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
 
                 html_popup = f"""
                 <div data-provincia="{provincia}" data-lat="{lat}" data-lng="{lon}">
-                    <b>{event['type']}</b><br>
-                    <b>{event.get('cause_type','')}</b><br>
-                    <i>{event.get('cause_detail','')}</i><br><br>
+                <div style="font-size:14px; line-height:1.25;">
+                    <div style="font-weight:700; font-size:15px;">{event.get('type','Evento')}</div>
+                    <div style="font-weight:600;">{event.get('cause_type','')}</div>
+                    <div style="font-style:italic; color:#444;">{event.get('cause_detail','')}</div>
 
-                    ID: {event['id']}<br>
-                    Probabilidad: {event['probability']}<br>
-                    Severidad: {event['severity']}<br>
-                    Carretera {event['road']} ({event['locality']}, Km {event['kilometro']})<br>
-                    Sentido de circulación: {event['sentido_kilometracion']}<br>
-                    Hora: {event['start_time']}<br>
-                    Carril de circulación: {event['carril_usado']}
+                    <hr style="margin:8px 0;">
+
+                    <div>📍 <b>{event.get('road','')}</b> · Km <b>{event.get('kilometro','')}</b></div>
+                    <div>🏙️ {event.get('locality','Desconocido')} ({event.get('provincia','Desconocida')})</div>
+                    <div>➡️ Sentido de circulación: {event.get('sentido_kilometracion','Sentido desconocido')}</div>
+                    <div>🛣️ Carril de circulación: {event.get('carril_usado','')}</div>
+
+                    <hr style="margin:8px 0;">
+
+                    <div>⚠️ Severidad: <b>{event.get('severity','desconocida')}</b> · Prob.: <b>{event.get('probability','desconocida')}</b></div>
+                    <div>🕒 Inicio: {event.get('start_time','Fecha desconocida')}</div>
+
+                    <div style="margin-top:6px; font-size:12px; color:#666;">ID: {event.get('id','')}</div>
+                </div>
                 </div>
                 """
+
 
 
                 folium.Marker(
@@ -103,22 +112,34 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
 
                 seg_id = f"event_{event['id']}"
 
+
                 html_ini = f"""
                 <div data-seg="{seg_id}"
                     data-lat-ini="{lat_ini}" data-lng-ini="{lon_ini}"
                     data-lat-fin="{lat_fin}" data-lng-fin="{lon_fin}"
                     data-provincia="{provincia}" data-lat="{lat_ini}" data-lng="{lon_ini}">
-                    <b>{event['type']}</b><br>
-                    <b>{event.get('cause_type','')}</b><br>
-                    <i>{event.get('cause_detail','')}</i><br><br>
+                <div style="font-size:14px; line-height:1.25;">
+                    <div style="font-weight:700; font-size:15px;">{event.get('type','Evento')}</div>
+                    <div style="font-weight:600;">{event.get('cause_type','')}</div>
+                    <div style="font-style:italic; color:#444;">{event.get('cause_detail','')}</div>
 
-                    ID: {event['id']}<br>
-                    Probabilidad: {event['probability']}<br>
-                    Severidad: {event['severity']}<br>
-                    Carretera {event['road']} ({event.get('locality_ini','Desconocido')}, Km {event['kilometro_ini']})<br>
-                    Sentido de circulación: {event.get('sentido_kilometracion','Sentido desconocido')}<br>
-                    Hora: {event['start_time']}<br>
-                    Carril de circulación: {event['carril_usado']}
+                    <hr style="margin:8px 0;">
+
+                    <div>🛣️ <b>{event.get('road','')}</b> ({event.get('provincia','Desconocida')})</div>
+                    <div>▶️ <b>TRAMO</b>:
+                    Km <b>{event.get('kilometro_ini','')}</b> — {event.get('locality_ini','Desconocido')}
+                    → Km <b>{event.get('kilometro_fin','')}</b> — {event.get('locality_fin','Desconocido')}
+                    </div>
+                    <div>➡️ Sentido de circulación: {event.get('sentido_kilometracion','Sentido desconocido')}</div>
+                    <div>🛣️ Carril: {event.get('carril_usado','')}</div>
+
+                    <hr style="margin:8px 0;">
+
+                    <div>⚠️ Severidad: <b>{event.get('severity','desconocida')}</b> · Prob.: <b>{event.get('probability','desconocida')}</b></div>
+                    <div>🕒 Inicio: {event.get('start_time','Fecha desconocida')}</div>
+
+                    <div style="margin-top:6px; font-size:12px; color:#666;">ID: {event.get('id','')}</div>
+                </div>
                 </div>
                 """
 
@@ -127,19 +148,31 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                     data-lat-ini="{lat_ini}" data-lng-ini="{lon_ini}"
                     data-lat-fin="{lat_fin}" data-lng-fin="{lon_fin}"
                     data-provincia="{provincia}" data-lat="{lat_fin}" data-lng="{lon_fin}">
-                    <b>{event['type']}</b><br>
-                    <b>{event.get('cause_type','')}</b><br>
-                    <i>{event.get('cause_detail','')}</i><br><br>
+                <div style="font-size:14px; line-height:1.25;">
+                    <div style="font-weight:700; font-size:15px;">{event.get('type','Evento')}</div>
+                    <div style="font-weight:600;">{event.get('cause_type','')}</div>
+                    <div style="font-style:italic; color:#444;">{event.get('cause_detail','')}</div>
 
-                    ID: {event['id']}<br>
-                    Probabilidad: {event['probability']}<br>
-                    Severidad: {event['severity']}<br>
-                    Carretera {event['road']} ({event.get('locality_fin','Desconocido')}, Km {event['kilometro_fin']})<br>
-                    Sentido de circulación: {event.get('sentido_kilometracion','Sentido desconocido')}<br>
-                    Hora: {event['start_time']}<br>
-                    Carril de circulación: {event['carril_usado']}
+                    <hr style="margin:8px 0;">
+
+                    <div>🛣️ <b>{event.get('road','')}</b> ({event.get('provincia','Desconocida')})</div>
+                    <div>▶️ <b>TRAMO</b>:
+                    Km <b>{event.get('kilometro_ini','')}</b> — {event.get('locality_ini','Desconocido')}
+                    → Km <b>{event.get('kilometro_fin','')}</b> — {event.get('locality_fin','Desconocido')}
+                    </div>
+                    <div>➡️ Sentido de circulación: {event.get('sentido_kilometracion','Sentido desconocido')}</div>
+                    <div>🛣️ Carril: {event.get('carril_usado','')}</div>
+
+                    <hr style="margin:8px 0;">
+
+                    <div>⚠️ Severidad: <b>{event.get('severity','desconocida')}</b> · Prob.: <b>{event.get('probability','desconocida')}</b></div>
+                    <div>🕒 Inicio: {event.get('start_time','Fecha desconocida')}</div>
+
+                    <div style="margin-top:6px; font-size:12px; color:#666;">ID: {event.get('id','')}</div>
+                </div>
                 </div>
                 """
+
 
                 folium.Marker(
                     location=[lat_ini, lon_ini],
@@ -165,13 +198,23 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
         if radar["type"] == "Cabina":
             lat, lon = radar["latitude"], radar["longitude"]
             if (lat, lon) not in added_radar_locations:
+
                 html = f"""
                 <div data-provincia="{provincia}">
-                    <b>RADAR CABINA</b><br>ID: {radar['radar_id_fijo']}<br>
-                    {radar['road']} (Km {radar['kilometro']})<br>
-                    Sentido de circulación: {radar['sentido_kilometracion']}
+                <div style="font-size:14px; line-height:1.25;">
+                    <div style="font-weight:800; font-size:15px;">🚨 RADAR CABINA</div>
+
+                    <hr style="margin:8px 0;">
+
+                    <div>🛣️ <b>{radar.get('road','')}</b> · Km <b>{radar.get('kilometro','')}</b></div>
+                    <div>📍 {radar.get('provincia','Desconocida')}</div>
+                    <div>➡️ Sentido de circulación: {radar.get('sentido_kilometracion','Desconocido')}</div>
+
+                    <div style="margin-top:6px; font-size:12px; color:#666;">ID: {radar.get('radar_id_fijo','')}</div>
+                </div>
                 </div>
                 """
+
                 folium.Marker(
                     location=[lat, lon],
                     tooltip=f"{radar['type']}<br>{provincia}",
@@ -192,16 +235,33 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
 
             for label, lat, lon, radar_id in coords:
                 if pd.notna(lat) and pd.notna(lon) and (lat, lon) not in added_radar_locations:
+
                     html = f"""
                     <div data-seg="{seg_id}"
                         data-lat-ini="{lat_ini_r}" data-lng-ini="{lon_ini_r}"
                         data-lat-fin="{lat_fin_r}" data-lng-fin="{lon_fin_r}"
                         data-provincia="{provincia}">
-                        <b>RADAR TRAMO - {label}</b><br>ID: {radar_id}<br>
-                        {radar['road']} (Km {radar['kilometro']})<br>
-                        Sentido de circulación: {radar['sentido_kilometracion']}
+                    <div style="font-size:14px; line-height:1.25;">
+                        <div style="font-weight:800; font-size:15px;">🚨 RADAR TRAMO — {label}</div>
+
+                        <hr style="margin:8px 0;">
+
+                        <div>🛣️ <b>{radar.get('road','')}</b> ({radar.get('provincia','Desconocida')})</div>
+                        <div>▶️ Tramo controlado (línea en mapa)</div>
+                        <div>➡️ Sentido de circulación: {radar.get('sentido_kilometracion','Desconocido')}</div>
+                        <div>📍 Km ref.: <b>{radar.get('kilometro','')}</b></div>
+
+                        <hr style="margin:8px 0;">
+
+                        <div style="font-size:12px; color:#666;">
+                        ID INI: {radar.get('radar_id_ini','')}<br>
+                        ID FIN: {radar.get('radar_id_fin','')}
+                        </div>
+                    </div>
                     </div>
                     """
+
+
                     folium.Marker(
                         location=[lat, lon],
                         tooltip=f"{radar['type']}<br>{provincia}",

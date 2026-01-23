@@ -193,7 +193,7 @@
 # Ver cuantos valores distintos tiene cada campo
 import xml.etree.ElementTree as ET
 
-def listar_cause_types(file_path="trafico.xml"):
+def listar_lane_usages(file_path="trafico.xml"):
     tree = ET.parse(file_path)
     root = tree.getroot()
 
@@ -205,18 +205,19 @@ def listar_cause_types(file_path="trafico.xml"):
         "xsi": "http://www.w3.org/2001/XMLSchema-instance",
     }
 
-    cause_types = set()
+    lane_usages = set()
 
     for situation in root.findall(".//sit:situationRecord", namespaces=ns):
-        cause_type_el = situation.find(".//sit:cause/sit:causeType", namespaces=ns)
-        if cause_type_el is not None and cause_type_el.text:
-            cause_types.add(cause_type_el.text.strip())
+        carril_el = situation.find(".//lse:tpegDirectionRoad", namespaces=ns)
+        if carril_el is not None and carril_el.text:
+            lane_usages.add(carril_el.text.strip())
 
-    return sorted(cause_types)
+    return sorted(lane_usages)
 
-causas = listar_cause_types("data/trafico.xml")
-for c in causas:
-    print(c)
+
+usos = listar_lane_usages("data/trafico.xml")
+for u in usos:
+    print(u)
 
 # import xml.etree.ElementTree as ET
 
