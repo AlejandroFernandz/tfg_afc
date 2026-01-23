@@ -26,7 +26,7 @@ def actualizar_mapa_periodicamente():
             print("[✅] Mapa actualizado correctamente.")
         except Exception as e:
             print(f"[❌] Error al actualizar el mapa: {e}")
-        time.sleep(300)  # 5 minutos
+        time.sleep(120)  # 300 = 5 minutos, 120 = 2 minutos
 
 @app.route("/")
 def home():
