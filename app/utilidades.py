@@ -55,8 +55,6 @@ def icono_por_tipo(cause_type: str):
 
     return icon_map.get(key, ("exclamation-triangle", "red"))
 
-
-
 # Coordenadas para hacer la seleccion del zoom por provincias
 coordenadas_provincias = {
     "A Coruña": [43.3623, -8.4115],
@@ -100,124 +98,18 @@ coordenadas_provincias = {
     "Tarragona": [41.1189, 1.2445],
     "Teruel": [40.3456, -1.1065],
     "Toledo": [39.8628, -4.0273],
-    "Valencia": [39.4699, -0.3763],
+    "Valencia/València": [39.4699, -0.3763],
     "Valladolid": [41.6520, -4.7286],
     "Vitoria": [42.8467, -2.6727],
     "Zamora": [41.5033, -5.7446],
     "Zaragoza": [41.6488, -0.8891],
-    "Ceuta": [35.8894, -5.3213],
-    "Melilla": [35.2923, -2.9381],
     "Todas": [40.4168, -3.7038]
 }
 
-
 # Funcion para generar el segmento entre los popups de eventos y radares de tramo
-
-import folium
-
-# def add_segment_line_js(base_map):
-#     """
-#     - Al abrir un popup con data-seg + coords ini/fin, dibuja una línea entre ambos puntos.
-#     - La línea se mantiene hasta click en el mapa (fuera de popups) o hasta abrir otro popup de tramo.
-#     - Soporta popup.getContent() como string o HTMLElement.
-#     """
-#     map_var = base_map.get_name()
-#     js = f"""
-#     <script>
-#     (function() {{
-#       function bindWhenReady() {{
-#         // En folium, el objeto mapa (var) puede no estar disponible todavía cuando se inyecta este script
-#         if (typeof {map_var} === "undefined" || !{map_var}) {{
-#           setTimeout(bindWhenReady, 50);
-#           return;
-#         }}
-#         var map = {map_var};
-
-#         // Línea activa (solo una a la vez)
-#         window.__activeSegmentLine = window.__activeSegmentLine || null;
-
-#         function removeActiveLine() {{
-#           if (window.__activeSegmentLine) {{
-#             try {{ map.removeLayer(window.__activeSegmentLine); }} catch(e) {{}}
-#             window.__activeSegmentLine = null;
-#           }}
-#         }}
-
-#         function extractSegData(popupContent) {{
-#           // popupContent puede ser string HTML o HTMLElement
-#           var el = null;
-
-#           if (!popupContent) return null;
-
-#           if (typeof popupContent === "string") {{
-#             var wrapper = document.createElement("div");
-#             wrapper.innerHTML = popupContent;
-#             el = wrapper.querySelector("div[data-seg]");
-#           }} else if (popupContent instanceof HTMLElement) {{
-#             el = popupContent.querySelector("div[data-seg]") || (popupContent.matches && popupContent.matches("div[data-seg]") ? popupContent : null);
-#           }} else {{
-#             return null;
-#           }}
-
-#           if (!el) return null;
-
-#           var seg = el.dataset.seg;
-#           var latIni = parseFloat(el.dataset.latIni);
-#           var lngIni = parseFloat(el.dataset.lngIni);
-#           var latFin = parseFloat(el.dataset.latFin);
-#           var lngFin = parseFloat(el.dataset.lngFin);
-
-#           if (!seg || [latIni, lngIni, latFin, lngFin].some(x => Number.isNaN(x))) return null;
-
-#           return {{ seg, latIni, lngIni, latFin, lngFin }};
-#         }}
-
-#         // 1) Cuando abres un popup:
-#         // - Si es de tramo -> dibuja/actualiza la línea
-#         // - Si NO es de tramo -> quita la línea (para que no se quede una línea "vieja" al abrir un punto fijo)
-#         map.on("popupopen", function(e) {{
-#           var content = e.popup && e.popup.getContent ? e.popup.getContent() : null;
-#           var data = extractSegData(content);
-
-#           if (!data) {{
-#             // popup no-tramo => quitamos línea
-#             removeActiveLine();
-#             return;
-#           }}
-
-#           // popup de tramo => reemplazamos la línea
-#           removeActiveLine();
-
-#           window.__activeSegmentLine = L.polyline(
-#             [[data.latIni, data.lngIni], [data.latFin, data.lngFin]]
-#           ).addTo(map);
-#         }});
-
-#         // 2) Click en el mapa (fuera de popups) => quita la línea
-#         // Nota: click dentro del popup normalmente no burbujea al mapa.
-#         map.on("click", function() {{
-#           removeActiveLine();
-#         }});
-#       }}
-
-#       bindWhenReady();
-#     }})();
-#     </script>
-#     """
-#     base_map.get_root().html.add_child(folium.Element(js))
-
-
-import folium
-
 def add_segment_line_js(base_map, max_km=50):
-    """
-    Dibuja una línea entre INI y FIN al abrir un popup de tramo, pero SOLO si
-    la distancia INI–FIN <= max_km.
-    La línea se mantiene hasta click en el mapa (fuera de popups) o abrir otro tramo.
-    """
     map_var = base_map.get_name()
     js = f"""
-    <script>
     (function() {{
       function bindWhenReady() {{
         if (typeof {map_var} === "undefined" || !{map_var}) {{
@@ -268,18 +160,13 @@ def add_segment_line_js(base_map, max_km=50):
           var data = extractSegData(content);
 
           if (!data) {{
-            // popup no-tramo => quitamos línea
             removeActiveLine();
             return;
           }}
 
-          // popup de tramo => reemplazamos la línea
           removeActiveLine();
 
-          // ✅ umbral de distancia (km)
           var MAX_KM = {float(max_km)};
-
-          // Leaflet devuelve metros
           var dMeters = map.distance([data.latIni, data.lngIni], [data.latFin, data.lngFin]);
           var dKm = dMeters / 1000;
 
@@ -287,14 +174,9 @@ def add_segment_line_js(base_map, max_km=50):
             window.__activeSegmentLine = L.polyline(
               [[data.latIni, data.lngIni], [data.latFin, data.lngFin]]
             ).addTo(map);
-          }} else {{
-            // Si prefieres NO borrar la línea anterior al abrir un tramo largo,
-            // mueve removeActiveLine() dentro del if (dKm <= MAX_KM)
-            // console.log("Segmento demasiado largo:", dKm.toFixed(1), "km");
           }}
         }});
 
-        // Click fuera de popups => quita la línea
         map.on("click", function() {{
           removeActiveLine();
         }});
@@ -302,6 +184,6 @@ def add_segment_line_js(base_map, max_km=50):
 
       bindWhenReady();
     }})();
-    </script>
     """
-    base_map.get_root().html.add_child(folium.Element(js))
+    # OJO: aquí NO ponemos <script>...</script>
+    base_map.get_root().script.add_child(folium.Element(js))
