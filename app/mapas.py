@@ -14,14 +14,12 @@ def save_atomic(m, output_file):
     m.save(tmp)
     os.replace(tmp, output_file)
 
-# Funcion para que vuelva a funcionar el zoom sobre las provincias, que se usará en create_actuales_map y create_futuros_map
 def expose_leaflet_map(base_map):
     map_var = base_map.get_name()
     js = f"""
-    <script>
     (function() {{
         function bind() {{
-            if (typeof {map_var} !== "undefined") {{
+            if (typeof {map_var} !== "undefined" && {map_var}) {{
                 window.map = {map_var};
             }} else {{
                 setTimeout(bind, 50);
@@ -29,10 +27,9 @@ def expose_leaflet_map(base_map):
         }}
         bind();
     }})();
-    </script>
     """
-    base_map.get_root().html.add_child(folium.Element(js))
-
+    # OJO: aquí NO ponemos <script>...</script>
+    base_map.get_root().script.add_child(folium.Element(js))
 
 # Función para crear el mapa combinado
 def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"):
@@ -44,11 +41,6 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
 
     cluster_eventos = MarkerCluster(name="Eventos agrupados", maxClusterRadius=50, disableClusteringAtZoom=15).add_to(base_map)
     cluster_radares = MarkerCluster(name="Radares agrupados", maxClusterRadius=50, disableClusteringAtZoom=15).add_to(base_map)
-
-    base_map.get_root().script.add_child(
-    folium.Element(f"window.map = {base_map.get_name()};")
-    )
-    # base_map.save(output_file)
 
     def añadir_eventos(df, fijos_fg, tramos_fg):
         for _, event in df.iterrows():
@@ -195,25 +187,32 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
         icon_color = "red" if radar["type"] == "Cabina" else "orange"
         provincia = radar["provincia"]
 
+
         if radar["type"] == "Cabina":
+            lugar = radar.get("location_name") or radar.get("provincia", "Desconocida")
             lat, lon = radar["latitude"], radar["longitude"]
             if (lat, lon) not in added_radar_locations:
 
                 html = f"""
                 <div data-provincia="{provincia}">
                 <div style="font-size:14px; line-height:1.25;">
-                    <div style="font-weight:800; font-size:15px;">🚨 RADAR CABINA</div>
+                    <div style="font-weight:700; font-size:15px;">Radar fijo (cabina)</div>
+                    <div style="font-weight:600;">Control de velocidad</div>
+                    <div style="font-style:italic; color:#444;">Ubicación puntual</div>
 
                     <hr style="margin:8px 0;">
 
-                    <div>🛣️ <b>{radar.get('road','')}</b> · Km <b>{radar.get('kilometro','')}</b></div>
-                    <div>📍 {radar.get('provincia','Desconocida')}</div>
+                    <div>📍 <b>{radar.get('road','')}</b> · Km <b>{radar.get('kilometro','')}</b></div>
+                    <div>🏙️ {lugar} ({radar.get('provincia','Desconocida')})</div>
                     <div>➡️ Sentido de circulación: {radar.get('sentido_kilometracion','Desconocido')}</div>
+
+                    <hr style="margin:8px 0;">
 
                     <div style="margin-top:6px; font-size:12px; color:#666;">ID: {radar.get('radar_id_fijo','')}</div>
                 </div>
                 </div>
                 """
+
 
                 folium.Marker(
                     location=[lat, lon],
@@ -232,7 +231,7 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                 ("INI", lat_ini_r, lon_ini_r, radar["radar_id_ini"]),
                 ("FIN", lat_fin_r, lon_fin_r, radar["radar_id_fin"])
             ]
-
+            lugar = radar.get("location_name") or radar.get("provincia", "Desconocida")
             for label, lat, lon, radar_id in coords:
                 if pd.notna(lat) and pd.notna(lon) and (lat, lon) not in added_radar_locations:
 
@@ -240,16 +239,17 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                     <div data-seg="{seg_id}"
                         data-lat-ini="{lat_ini_r}" data-lng-ini="{lon_ini_r}"
                         data-lat-fin="{lat_fin_r}" data-lng-fin="{lon_fin_r}"
-                        data-provincia="{provincia}">
+                        data-provincia="{provincia}" data-lat="{lat}" data-lng="{lon}">
                     <div style="font-size:14px; line-height:1.25;">
-                        <div style="font-weight:800; font-size:15px;">🚨 RADAR TRAMO — {label}</div>
+                        <div style="font-weight:700; font-size:15px;">Radar de tramo — {label}</div>
+                        <div style="font-weight:600;">Control de velocidad media</div>
+                        <div style="font-style:italic; color:#444;">Tramo controlado (línea en el mapa)</div>
 
                         <hr style="margin:8px 0;">
 
-                        <div>🛣️ <b>{radar.get('road','')}</b> ({radar.get('provincia','Desconocida')})</div>
-                        <div>▶️ Tramo controlado (línea en mapa)</div>
+                        <div>📍 <b>{radar.get('road','')}</b> · Km ref. <b>{radar.get('kilometro','')}</b></div>
+                        <div>🏙️ {lugar} ({radar.get('provincia','Desconocida')})</div>
                         <div>➡️ Sentido de circulación: {radar.get('sentido_kilometracion','Desconocido')}</div>
-                        <div>📍 Km ref.: <b>{radar.get('kilometro','')}</b></div>
 
                         <hr style="margin:8px 0;">
 
@@ -276,11 +276,8 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
 
 
     folium.LayerControl(collapsed=False).add_to(base_map)
-    base_map.get_root().script.add_child(
-    folium.Element(f"window.map = {base_map.get_name()};")) ### 28/12 correcto
     expose_leaflet_map(base_map)
-    # base_map.save(output_file)
-    add_segment_line_js(base_map, max_km=50) # 21-01 para segmentos entre popups
+    add_segment_line_js(base_map, max_km=50) 
     save_atomic(base_map, output_file)
 
 def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
@@ -290,11 +287,6 @@ def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
     base_map = folium.Map(location=[40.4168, -3.7038], zoom_start=6)
 
     cluster_eventos = MarkerCluster(name="Eventos futuros agrupados", maxClusterRadius=50, disableClusteringAtZoom=15).add_to(base_map)
-
-    base_map.get_root().script.add_child(
-    folium.Element(f"window.map = {base_map.get_name()};")
-    )
-    # base_map.save(output_file)
 
     def añadir_eventos(df, fijos_fg, tramos_fg):
         for _, event in df.iterrows():
@@ -383,9 +375,9 @@ def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
 
 
     añadir_eventos(eventos_df, cluster_eventos, cluster_eventos)
+
     folium.LayerControl(collapsed=False).add_to(base_map)
     expose_leaflet_map(base_map)
-    # base_map.save(output_file)
     add_segment_line_js(base_map, max_km=50)   # 22-01 para segmentos entre popups
     save_atomic(base_map, output_file)
 
@@ -409,7 +401,7 @@ def update_map():
     "Huelva", "Huesca", "Jaén", "La Rioja", "Las Palmas", "León", "Lleida", "Lugo", "Madrid",
     "Málaga", "Murcia", "Ourense", "Oviedo", "Palencia", "Pontevedra", "Salamanca", "San Sebastián",
     "Santa Cruz de Tenerife", "Santander", "Segovia", "Sevilla", "Soria", "Tarragona", "Teruel",
-    "Toledo", "Valencia", "Valladolid", "Vitoria", "Zamora", "Zaragoza", "Ceuta", "Melilla"
+    "Toledo", "Valencia/València", "Valladolid", "Vitoria", "Zamora", "Zaragoza"
     ]
     opciones_provincia = "<br>".join([f'<option value="{prov}">{prov}</option>' for prov in provincias])    
 
@@ -487,7 +479,7 @@ def update_map():
     "ALICANTE": [38.3452, -0.4810],
     "ALMERÍA": [36.8381, -2.4597],
     "ÁVILA": [40.6565, -4.6818],
-    "BADAJOS": [38.8786, -6.9703],
+    "BADAJOZ": [38.8786, -6.9703],
     "BARCELONA": [41.3888, 2.1590],
     "BILBAO": [43.2630, -2.9350],
     "CÁDIZ": [36.5160, -6.2994],
@@ -528,8 +520,6 @@ def update_map():
     "VITORIA": [42.8467, -2.6727],
     "ZAMORA": [41.5033, -5.7446],
     "ZARAGOZA": [41.6488, -0.8891],
-    "CEUTA": [35.8894, -5.3213],
-    "MELILLA": [35.2923, -2.9381],
     "TODAS": [40.4168, -3.7038]
 }};
     const tabs = document.querySelectorAll(".tab");

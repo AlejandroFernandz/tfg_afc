@@ -369,7 +369,25 @@ def parse_radares(file_path="radares.xml"):
         road_name = predefined_location.find(".//_0:roadName/_0:value", namespaces=ns).text # Nombre de la carretera
         
         provincia = predefined_location.find(".//_0:administrativeArea/_0:value", namespaces=ns)
-        provincia = provincia.text if provincia is not None else "Desconocida"  
+        provincia = provincia.text if provincia is not None else "Desconocida"
+        # Nombre detallado del radar (si existe) - p.ej. "AS PIAS"
+        # loc_name_el = predefined_location.find(".//_0:predefinedLocationName/_0:value", namespaces=ns)
+        # location_name = loc_name_el.text.strip() if (loc_name_el is not None and loc_name_el.text) else None
+        loc_name_el = predefined_location.find(".//_0:predefinedLocationName/_0:value", namespaces=ns)
+        location_name = loc_name_el.text.strip() if (loc_name_el is not None and loc_name_el.text) else None
+
+        # ❌ Filtrar nombres "técnicos" tipo CVM_..., CABINACINEMOMETRO_..., GUID_...
+        if location_name:
+            up = location_name.strip().upper()
+            if (
+                up.startswith("CVM_")
+                or up.startswith("CABINACINEMOMETRO")
+                or up.startswith("GUID_")
+                or up.startswith("GUID")
+            ):
+                location_name = None
+
+  
 
         kilometro = predefined_location.find(".//_0:referencePointDistance", namespaces=ns).text # Punto kilometrico en carretera para RADAR FIJO y RADAR DE TRAMO
 
@@ -390,6 +408,7 @@ def parse_radares(file_path="radares.xml"):
                     "type": "Cabina",
                     "road": road_name,
                     "provincia": provincia,
+                    "location_name": location_name,
                     "latitude": float(latitude.text),
                     "longitude": float(longitude.text),
                     "kilometro": float(kilometro)*1/1000,
@@ -412,6 +431,7 @@ def parse_radares(file_path="radares.xml"):
                     "type": "Tramo",
                     "road": road_name,
                     "provincia": provincia,
+                    "location_name": location_name,
                     "kilometro": float(kilometro)*1/1000,
                     "sentido_kilometracion": sentido_kilometracion,
                     "latitude_ini": float(latitude_ini.text),
