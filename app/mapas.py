@@ -73,9 +73,9 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                     Probabilidad: {event['probability']}<br>
                     Severidad: {event['severity']}<br>
                     Carretera {event['road']} ({event['locality']}, Km {event['kilometro']})<br>
-                    Sentido: {event['sentido_kilometracion']}<br>
+                    Sentido de circulación: {event['sentido_kilometracion']}<br>
                     Hora: {event['start_time']}<br>
-                    Carril: {event['carril_usado']}
+                    Carril de circulación: {event['carril_usado']}
                 </div>
                 """
 
@@ -116,9 +116,9 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                     Probabilidad: {event['probability']}<br>
                     Severidad: {event['severity']}<br>
                     Carretera {event['road']} ({event.get('locality_ini','Desconocido')}, Km {event['kilometro_ini']})<br>
-                    Sentido: {event['sentido_kilometracion']}<br>
+                    Sentido de circulación: {event.get('sentido_kilometracion','Sentido desconocido')}<br>
                     Hora: {event['start_time']}<br>
-                    Carril: {event['carril_usado']}
+                    Carril de circulación: {event['carril_usado']}
                 </div>
                 """
 
@@ -135,9 +135,9 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                     Probabilidad: {event['probability']}<br>
                     Severidad: {event['severity']}<br>
                     Carretera {event['road']} ({event.get('locality_fin','Desconocido')}, Km {event['kilometro_fin']})<br>
-                    Sentido: {event['sentido_kilometracion']}<br>
+                    Sentido de circulación: {event.get('sentido_kilometracion','Sentido desconocido')}<br>
                     Hora: {event['start_time']}<br>
-                    Carril: {event['carril_usado']}
+                    Carril de circulación: {event['carril_usado']}
                 </div>
                 """
 
@@ -169,7 +169,7 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                 <div data-provincia="{provincia}">
                     <b>RADAR CABINA</b><br>ID: {radar['radar_id_fijo']}<br>
                     {radar['road']} (Km {radar['kilometro']})<br>
-                    Sentido: {radar['sentido_kilometracion']}
+                    Sentido de circulación: {radar['sentido_kilometracion']}
                 </div>
                 """
                 folium.Marker(
@@ -199,7 +199,7 @@ def create_actuales_map(eventos_df, radares_df, output_file="mapa_actuales.html"
                         data-provincia="{provincia}">
                         <b>RADAR TRAMO - {label}</b><br>ID: {radar_id}<br>
                         {radar['road']} (Km {radar['kilometro']})<br>
-                        Sentido: {radar['sentido_kilometracion']}
+                        Sentido de circulación: {radar['sentido_kilometracion']}
                     </div>
                     """
                     folium.Marker(
@@ -253,9 +253,9 @@ def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
                 <div data-provincia="{provincia}" data-lat="{lat}" data-lng="{lon}">
                     <b>EVENTO FUTURO</b><br>ID: {event['id']}<br>{event['type']} ({event['probability']}) - {event['severity']}<br>
                     Carretera {event['road']} ({event['locality']}, Km {event['kilometro']})<br>
-                    Sentido: {event['sentido_kilometracion']}<br>
+                    Sentido de circulación: {event['sentido_kilometracion']}<br>
                     Hora esperada: {event['start_time']}<br>
-                    Carril: {event['carril_usado']}
+                    Carril de circulación: {event['carril_usado']}
                 </div>
                 """
 
@@ -290,9 +290,9 @@ def create_futuros_map(eventos_df, output_file="mapa_futuros.html"):
                     data-provincia="{provincia}" data-lat="{lat_ini}" data-lng="{lon_ini}">
                     <b>INICIO EVENTO FUTURO</b><br>ID: {event['id']}<br>{event['type']}<br>
                     {event['road']} ({event.get('locality_ini','Desconocido')}, Km {event['kilometro_ini']})<br>
-                    Sentido: {event['sentido_kilometracion_ini']}<br>
+                    Sentido de circulación: {event.get('sentido_kilometracion','Sentido desconocido')}<br>
                     Hora esperada: {event['start_time']}<br>
-                    Carril: {event['carril_usado']}
+                    Carril de circulación: {event['carril_usado']}
                 </div>
                 """
 
