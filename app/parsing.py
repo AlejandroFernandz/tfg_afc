@@ -285,6 +285,8 @@ def parse_datex(file_path="trafico.xml"):
                         "carril_usado": carril_usado,
                         "kilometro_ini": kilometro_ini if kilometro_ini is not None else "Km inicio desconocido",
                         "kilometro_fin": kilometro_fin if kilometro_fin is not None else "Km fin desconocido",
+                        # "sentido_kilometracion_ini": sentido_kilometracion_ini if sentido_kilometracion_ini is not None else "Sentido desconocido",
+                        "sentido_kilometracion": sentido_kilometracion_ini if sentido_kilometracion_ini is not None else "Sentido desconocido",
                         "sentido_kilometracion_ini": sentido_kilometracion_ini if sentido_kilometracion_ini is not None else "Sentido desconocido",
                         "provincia": provincia,
                         "start_time_obj": start_time_obj,
