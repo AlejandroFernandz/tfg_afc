@@ -41,6 +41,9 @@ def normalizar_texto(valor):
 # Parámetros de conexión
 BUCKET = "datos-dgt"
 # Meter aqui las claves de Onenote
+AWS_ACCESS_KEY_ID = 'AKIA4SZHNVFRBQQVFQFT'
+AWS_SECRET_ACCESS_KEY = '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'
+
 
 # Crear cliente S3
 s3 = boto3.client("s3", aws_access_key_id=AWS_ACCESS_KEY_ID, aws_secret_access_key=AWS_SECRET_ACCESS_KEY)
