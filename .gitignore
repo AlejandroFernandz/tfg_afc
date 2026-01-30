@@ -9,7 +9,7 @@ __pycache__/
 # Datos descargados
 data/xml_descargados/*.xml
 data/*.csv
-data_analisis/*.csv
+data_analisis/output/*.csv
 data/*.xml
 
 # Mapas generados
