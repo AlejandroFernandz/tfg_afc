@@ -10,6 +10,7 @@ __pycache__/
 data/xml_descargados/*.xml
 data/*.csv
 data_analisis/output/*.csv
+data_analisis/output/00_snapshots_eventos_base_nuevo_espanol.csv
 data/*.xml
 
 # Mapas generados
