@@ -24,3 +24,5 @@ mapas_generados/*.tmp.html
 # Visualizaciones - outputs grandes
 visualizaciones/**/*.csv
 visualizaciones/**/*.pbix
+
+replacements.txt
