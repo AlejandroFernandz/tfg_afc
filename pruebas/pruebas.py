@@ -190,36 +190,36 @@
 
 
 
-# Ver cuantos valores distintos tiene cada campo
-import xml.etree.ElementTree as ET
-
-def listar_lane_usages(file_path="trafico.xml"):
-    tree = ET.parse(file_path)
-    root = tree.getroot()
-
-    ns = {
-        "sit": "http://levelC/schema/3/situation",
-        "com": "http://levelC/schema/3/common",
-        "loc": "http://levelC/schema/3/locationReferencing",
-        "lse": "http:REDACTED_AWS_SECRET_ACCESS_KEYnishExtension",
-        "xsi": "http://www.w3.org/2001/XMLSchema-instance",
-    }
-
-    lane_usages = set()
-
-    for situation in root.findall(".//sit:situationRecord", namespaces=ns):
-        carril_el = situation.find(".//lse:tpegDirectionRoad", namespaces=ns)
-        if carril_el is not None and carril_el.text:
-            lane_usages.add(carril_el.text.strip())
-
-    return sorted(lane_usages)
-
-
-usos = listar_lane_usages("data/trafico.xml")
-for u in usos:
-    print(u)
-
+# # Ver cuantos valores distintos tiene cada campo
 # import xml.etree.ElementTree as ET
+
+# def listar_lane_usages(file_path="trafico.xml"):
+#     tree = ET.parse(file_path)
+#     root = tree.getroot()
+
+#     ns = {
+#         "sit": "http://levelC/schema/3/situation",
+#         "com": "http://levelC/schema/3/common",
+#         "loc": "http://levelC/schema/3/locationReferencing",
+#         "lse": "http:REDACTED_AWS_SECRET_ACCESS_KEYnishExtension",
+#         "xsi": "http://www.w3.org/2001/XMLSchema-instance",
+#     }
+
+#     lane_usages = set()
+
+#     for situation in root.findall(".//sit:situationRecord", namespaces=ns):
+#         carril_el = situation.find(".//lse:tpegDirectionRoad", namespaces=ns)
+#         if carril_el is not None and carril_el.text:
+#             lane_usages.add(carril_el.text.strip())
+
+#     return sorted(lane_usages)
+
+
+# usos = listar_lane_usages("data/trafico.xml")
+# for u in usos:
+#     print(u)
+
+# # import xml.etree.ElementTree as ET
 
 # def listar_situation_record_types(file_path="trafico.xml"):
 #     tree = ET.parse(file_path)
@@ -247,3 +247,42 @@ for u in usos:
 #     print(t)
 
 
+import boto3
+import os
+
+# ================== CONFIGURACIÓN ==================
+AWS_ACCESS_KEY_ID = "REDACTED_AWS_ACCESS_KEY_ID"
+AWS_SECRET_ACCESS_KEY = "REDACTED_AWS_SECRET_ACCESS_KEY"
+AWS_REGION = "eu-north-1"   # cámbiala si tu bucket está en otra región
+
+BUCKET_NAME = "datos-dgt"
+PREFIX = ""                # ej: "carpeta/xml/"
+DESTINO_LOCAL = "data/xml_descargados"
+# REDACTED_AWS_SECRET_ACCESS_KEY===========
+
+os.makedirs(DESTINO_LOCAL, exist_ok=True)
+
+s3 = boto3.client(
+    "s3",
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    region_name=AWS_REGION,
+)
+
+paginator = s3.get_paginator("list_objects_v2")
+
+for page in paginator.paginate(Bucket=BUCKET_NAME, Prefix=PREFIX):
+    if "Contents" not in page:
+        continue
+
+    for obj in page["Contents"]:
+        key = obj["Key"]
+
+        if key.lower().endswith(".xml"):
+            nombre_archivo = os.path.basename(key)
+            ruta_local = os.path.join(DESTINO_LOCAL, nombre_archivo)
+
+            print(f"Descargando {key}")
+            s3.download_file(BUCKET_NAME, key, ruta_local)
+
+print("✔ Descarga completada")

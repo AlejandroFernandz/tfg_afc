@@ -1,0 +1,78 @@
+date,iso_year,iso_week,weekday,weekday_num,cause_type,eventos_activos
+2025-03-13,2025,11,Thursday,3,Condiciones Meteorologicas Adversas,77
+2025-03-13,2025,11,Thursday,3,Gestion De Carril / Calzada,826
+2025-03-13,2025,11,Thursday,3,Mantenimiento De La Via,785
+2025-03-13,2025,11,Thursday,3,Obstruccion,153
+2025-03-13,2025,11,Thursday,3,Obstruccion Por Condiciones Ambientales,88
+2025-03-13,2025,11,Thursday,3,Obstruccion Por Vehiculo,740
+2025-03-13,2025,11,Thursday,3,Trafico Anomalo,241
+2025-04-10,2025,15,Thursday,3,Trafico Anomalo,529
+2025-04-10,2025,15,Thursday,3,Obstruccion Por Vehiculo,1121
+2025-04-10,2025,15,Thursday,3,Obstruccion Por Condiciones Ambientales,56
+2025-04-10,2025,15,Thursday,3,Gestion De Carril / Calzada,1292
+2025-04-10,2025,15,Thursday,3,Mantenimiento De La Via,1325
+2025-04-10,2025,15,Thursday,3,Condiciones Meteorologicas Adversas,23
+2025-04-10,2025,15,Thursday,3,Obstruccion,224
+2025-04-11,2025,15,Friday,4,Obstruccion Por Vehiculo,1210
+2025-04-11,2025,15,Friday,4,Trafico Anomalo,544
+2025-04-11,2025,15,Friday,4,Obstruccion,262
+2025-04-11,2025,15,Friday,4,Obstruccion Por Condiciones Ambientales,54
+2025-04-11,2025,15,Friday,4,Gestion De Carril / Calzada,1052
+2025-04-11,2025,15,Friday,4,Condiciones Meteorologicas Adversas,41
+2025-04-11,2025,15,Friday,4,Mantenimiento De La Via,991
+2025-04-12,2025,15,Saturday,5,Trafico Anomalo,335
+2025-04-12,2025,15,Saturday,5,Obstruccion Por Condiciones Ambientales,57
+2025-04-12,2025,15,Saturday,5,Obstruccion,161
+2025-04-12,2025,15,Saturday,5,Obstruccion Por Vehiculo,1016
+2025-04-12,2025,15,Saturday,5,Gestion De Carril / Calzada,433
+2025-04-12,2025,15,Saturday,5,Condiciones Meteorologicas Adversas,66
+2025-04-12,2025,15,Saturday,5,Mantenimiento De La Via,326
+2025-04-13,2025,15,Sunday,6,Obstruccion Por Vehiculo,763
+2025-04-13,2025,15,Sunday,6,Condiciones Meteorologicas Adversas,77
+2025-04-13,2025,15,Sunday,6,Gestion De Carril / Calzada,452
+2025-04-13,2025,15,Sunday,6,Mantenimiento De La Via,364
+2025-04-13,2025,15,Sunday,6,Obstruccion,158
+2025-04-13,2025,15,Sunday,6,Obstruccion Por Condiciones Ambientales,54
+2025-04-13,2025,15,Sunday,6,Trafico Anomalo,296
+2025-04-14,2025,16,Monday,0,Obstruccion Por Vehiculo,1260
+2025-04-14,2025,16,Monday,0,Trafico Anomalo,442
+2025-04-14,2025,16,Monday,0,Obstruccion Por Condiciones Ambientales,53
+2025-04-14,2025,16,Monday,0,Obstruccion,216
+2025-04-14,2025,16,Monday,0,Mantenimiento De La Via,940
+2025-04-14,2025,16,Monday,0,Gestion De Carril / Calzada,1035
+2025-04-14,2025,16,Monday,0,Condiciones Meteorologicas Adversas,47
+2025-04-15,2025,16,Tuesday,1,Obstruccion Por Vehiculo,1148
+2025-04-15,2025,16,Tuesday,1,Obstruccion Por Condiciones Ambientales,54
+2025-04-15,2025,16,Tuesday,1,Obstruccion,249
+2025-04-15,2025,16,Tuesday,1,Trafico Anomalo,476
+2025-04-15,2025,16,Tuesday,1,Gestion De Carril / Calzada,968
+2025-04-15,2025,16,Tuesday,1,Condiciones Meteorologicas Adversas,84
+2025-04-15,2025,16,Tuesday,1,Mantenimiento De La Via,903
+2025-04-16,2025,16,Wednesday,2,Condiciones Meteorologicas Adversas,81
+2025-04-16,2025,16,Wednesday,2,Gestion De Carril / Calzada,720
+2025-04-16,2025,16,Wednesday,2,Mantenimiento De La Via,579
+2025-04-16,2025,16,Wednesday,2,Obstruccion,288
+2025-04-16,2025,16,Wednesday,2,Obstruccion Por Condiciones Ambientales,47
+2025-04-16,2025,16,Wednesday,2,Obstruccion Por Vehiculo,1242
+2025-04-16,2025,16,Wednesday,2,Trafico Anomalo,547
+2025-04-17,2025,16,Thursday,3,Obstruccion Por Vehiculo,1050
+2025-04-17,2025,16,Thursday,3,Trafico Anomalo,559
+2025-04-17,2025,16,Thursday,3,Obstruccion Por Condiciones Ambientales,52
+2025-04-17,2025,16,Thursday,3,Gestion De Carril / Calzada,434
+2025-04-17,2025,16,Thursday,3,Mantenimiento De La Via,282
+2025-04-17,2025,16,Thursday,3,Condiciones Meteorologicas Adversas,36
+2025-04-17,2025,16,Thursday,3,Obstruccion,253
+2025-04-18,2025,16,Friday,4,Trafico Anomalo,361
+2025-04-18,2025,16,Friday,4,Obstruccion Por Condiciones Ambientales,47
+2025-04-18,2025,16,Friday,4,Obstruccion,222
+2025-04-18,2025,16,Friday,4,Obstruccion Por Vehiculo,790
+2025-04-18,2025,16,Friday,4,Gestion De Carril / Calzada,365
+2025-04-18,2025,16,Friday,4,Condiciones Meteorologicas Adversas,66
+2025-04-18,2025,16,Friday,4,Mantenimiento De La Via,275
+2025-04-19,2025,16,Saturday,5,Obstruccion Por Vehiculo,851
+2025-04-19,2025,16,Saturday,5,Condiciones Meteorologicas Adversas,91
+2025-04-19,2025,16,Saturday,5,Gestion De Carril / Calzada,356
+2025-04-19,2025,16,Saturday,5,Mantenimiento De La Via,285
+2025-04-19,2025,16,Saturday,5,Obstruccion,305
+2025-04-19,2025,16,Saturday,5,Obstruccion Por Condiciones Ambientales,48
+2025-04-19,2025,16,Saturday,5,Trafico Anomalo,332
