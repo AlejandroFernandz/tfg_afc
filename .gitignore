@@ -7,7 +7,7 @@ __pycache__/
 .venv
 
 # Datos descargados
-data/xml_historicos/*.xml
+data/xml_descargados/*.xml
 data/*.csv
 data/*.xml
 
@@ -22,3 +22,5 @@ mapas_generados/*.tmp.html
 # Visualizaciones - outputs grandes
 visualizaciones/**/*.csv
 visualizaciones/**/*.pbix
+
+requitements.txt
